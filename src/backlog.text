@@ -1,0 +1,9 @@
+[] создать логированные переходы в навигации
+[] исправить глобальные стили
+[] вернуть alias @
+[] проверить сборку проекта 
+    npx tailwindcss -i ./src/input.css -o ./src/output.css --watch
+    https://v2.tailwindcss.com/docs/guides/vue-3-vite
+    https://v2.tailwindcss.com/docs/optimizing-for-production
+[] add darck mode
+    https://tailwindcss.com/docs/upgrade-guide#remove-dark-mode-configuration

@@ -1,12 +1,12 @@
-import Home from '../views/Home.vue';
 import About from '../views/About.vue';
 import Settings from '../views/Settings.vue';
+import Main from '../pages/Main.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 
 const routes = [
 	{
 		path: '/',
-		component: Home
+		component: Main
 	},
 	{
 		path: '/about',

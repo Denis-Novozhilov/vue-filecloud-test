@@ -2,14 +2,24 @@
 import HelloWorld from './components/HelloWorld.vue';
 import { storeToRefs } from 'pinia';
 import { useStore } from './store';
+import Navbar from './components/Navbar.vue';
 
 
     const store = useStore();
 
     const { name, number } = storeToRefs(store);
+
+    // export default {
+    //   components: {
+    //     Navbar
+    //   }
+    // }
 </script>
 
 <template>
+  <h1 class="text-3xl font-bold underline">Hello world!</h1>
+  <h1 class="text-red-500">Hello world!</h1>
+  <Navbar></Navbar>
   <router-link style="margin: 0 5px" to="/">Home</router-link>
   <router-link style="margin: 0 5px" to="/about">About</router-link>
   <router-link style="margin: 0 5px" to="/settings">Settings</router-link>
@@ -27,7 +37,7 @@ import { useStore } from './store';
   <h2>{{ number }}</h2>  
   <HelloWorld msg="Vite + Vue" />
 </template>
-
+<!-- 
 <style scoped>
 .logo {
   height: 6em;
@@ -41,4 +51,4 @@ import { useStore } from './store';
 .logo.vue:hover {
   filter: drop-shadow(0 0 2em #42b883aa);
 }
-</style>
+</style> -->

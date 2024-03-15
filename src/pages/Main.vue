@@ -9,9 +9,14 @@ import { useStore } from '../store';
 
 <template>
     <div>
+        <h1>main page</h1>
+    </div>
+
+
+</template>
+<!-- <div>
         <h2>Home view</h2>
         <p>Name: {{ store.name }}</p>
         <button @click="store.changeName('Apple')">ChangeNameToApple</button>
         <button @click="store.$reset">ResetStore</button>
-    </div>
-</template>
+    </div> -->
