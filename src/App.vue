@@ -3,9 +3,12 @@ import HelloWorld from './components/HelloWorld.vue';
 import { storeToRefs } from 'pinia';
 import { useStore } from './store';
 import Navbar from './components/Navbar.vue';
+// import Login from './components/Login.vue';
 
 
     const store = useStore();
+
+    const isLogged = false;
 
     const { name, number } = storeToRefs(store);
 
@@ -17,9 +20,17 @@ import Navbar from './components/Navbar.vue';
 </script>
 
 <template>
-  <h1 class="text-3xl font-bold underline">Hello world!</h1>
-  <h1 class="text-red-500">Hello world!</h1>
-  <Navbar></Navbar>
+  <div class="
+    container
+    mx-auto
+    px-[185px]
+    border-b-2
+    border-b-gray-300  
+  ">
+    <Navbar></Navbar>
+    <!-- <Login v-if="!isLogged"></Login> -->
+
+  </div>
   <router-link style="margin: 0 5px" to="/">Home</router-link>
   <router-link style="margin: 0 5px" to="/about">About</router-link>
   <router-link style="margin: 0 5px" to="/settings">Settings</router-link>
@@ -37,6 +48,7 @@ import Navbar from './components/Navbar.vue';
   <h2>{{ number }}</h2>  
   <HelloWorld msg="Vite + Vue" />
 </template>
+
 <!-- 
 <style scoped>
 .logo {

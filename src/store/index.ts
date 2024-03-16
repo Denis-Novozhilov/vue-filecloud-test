@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 
-export const useStore = defineStore('mainStore', {
+export const useStore = defineStore('mainTestStore', {
 	state: () => ({
 		number: 1,
 		name: 'Pinia'

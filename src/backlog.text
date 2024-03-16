@@ -7,3 +7,10 @@
     https://v2.tailwindcss.com/docs/optimizing-for-production
 [] add darck mode
     https://tailwindcss.com/docs/upgrade-guide#remove-dark-mode-configuration
+[] to Navbar add optional style isLogged or notLogged conditions
+[] add custon colors to tailwind settings
+[] add needed fonts in tailwind settings
+[] add .container element to App and fix sizes
+[] add font in tailwind
+[] add headwind 
+[] delete redundant elements , components , vues
