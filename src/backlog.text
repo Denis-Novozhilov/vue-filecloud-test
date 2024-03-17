@@ -14,3 +14,17 @@
 [] add font in tailwind
 [] add headwind 
 [] delete redundant elements , components , vues
+[] improve hr lines on every page
+[] watch about validation in forms (info in notion)
+
+[] add custom colors tailwind
+[] add custom font families tailwind
+
+[] add disable style on button login
+[] add warning style on login inputs
+
+[] add get login request
+
+[] adaptive
+
+[] clear all consoles

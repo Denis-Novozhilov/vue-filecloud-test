@@ -1,7 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '../store/authStore';
+import { storeToRefs } from 'pinia';
+// console.log(`ROUTES`);
+// console.log(`useAuthStore`);
+// console.log(useAuthStore);
 
 // const isAuthenticated = false;
-const isAuthenticated = true;
+// const isAuthenticated = true;
 
 const routes = [
 	{
@@ -33,24 +38,14 @@ const router = createRouter({
 	routes
 });
 
-router.beforeEach((to, from) => {
-	if (
-		// make sure the user is authenticated
-		!isAuthenticated &&
-		// ❗️ Avoid an infinite redirect
-		to.name !== 'Login'
-	) {
-		// redirect the user to the login page
-		return { name: 'Login' };
-	}
-	if (
-		// make sure the user is authenticated
-		isAuthenticated &&
-		// ❗️ Avoid an infinite redirect
-		to.name === 'Login'
-	) {
-		// redirect the user to the login page
-		return { name: 'Main' };
+router.beforeEach((to, from, next) => {
+	const authStore = useAuthStore();
+	if (!authStore.isLogged && to.name !== 'Login') {
+		next({ name: 'Login' });
+	} else if (authStore.isLogged && to.name === 'Login') {
+		next({ name: 'Main' });
+	} else {
+		next();
 	}
 });
 
