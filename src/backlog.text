@@ -28,3 +28,15 @@
 [] adaptive
 
 [] clear all consoles
+
+[] refactor buttons to UI component Button
+
+[] fix all ts errors
+
+[] check and fix all comments in code such as //[] #task
+
+[] fix extrimal html template zoom in/out breakpoints
+
+[] delete all comments
+
+[] try different browsers

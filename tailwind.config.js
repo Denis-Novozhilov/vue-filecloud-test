@@ -1,5 +1,6 @@
 // tailwind.config.js
 export default {
+	mode: 'jit',
 	// purge: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
 	content: [
 		// Example content paths...
