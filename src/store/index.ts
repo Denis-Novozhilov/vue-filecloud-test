@@ -1,16 +1,38 @@
 import { defineStore } from 'pinia';
+import { FileEntity } from '../types/fileEntity';
 
-export const useStore = defineStore('mainTestStore', {
+export const useFilesStore = defineStore('useFilesStore', {
 	state: () => ({
-		number: 1,
-		name: 'Pinia'
+		filesEntities: [] as FileEntity[],
+		selectedFiles: {
+			filesMap: new Map<string, string>()
+		}
 	}),
-	actions: {
-		changeName(value: string) {
-			this.name = value;
+	getters: {
+		getQuantity(): number {
+			return this.filesEntities.length;
 		},
-		increaseNumber() {
-			this.number += 1;
+		getFileFromMap:
+			(state) =>
+			(key: string): string | undefined => {
+				return state.selectedFiles.filesMap.get(key);
+			}
+	},
+	actions: {
+		pushFileEntity(value: FileEntity) {
+			this.filesEntities.push(value);
+		},
+		deleteFileEntity(value: FileEntity) {
+			this.filesEntities = this.filesEntities.filter((el) => el.id !== value.id);
+		},
+		clearAllEntities() {
+			this.filesEntities = [];
+		},
+		addFileToMap(key: string, value: string) {
+			this.selectedFiles.filesMap.set(key, value);
+		},
+		removeFileFromMap(key: string) {
+			this.selectedFiles.filesMap.delete(key);
 		}
 	}
 });

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { useStore } from '../store';
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
@@ -9,7 +9,33 @@ import { formatBytes } from '../helpers/sizeFormatter';
 
 const authStore = useAuthStore();
 
-const responseData = ref([]);
+const filesEntityes = ref([]);
+
+
+/*
+const selectedFiles = reactive({
+  filesMap: new Map(),
+});
+
+    // Добавляем элементы в Map
+    selectedFiles.filesMap.set('key1', 'value1');
+    selectedFiles.filesMap.set('key2', 'value2');
+
+    // Получаем доступ к элементам Map
+    console.log(selectedFiles.filesMap.get('key1')); // Вывод: value1
+
+    // Обновляем значение
+    selectedFiles.filesMap.set('key1', 'newValue1');
+    console.log(selectedFiles.filesMap.get('key1')); // Вывод: newValue1
+
+    // Удаление элемента
+    selectedFiles.filesMap.delete('key1');
+    console.log(selectedFiles.filesMap.get('key1')); // Вывод: undefined
+
+*/
+
+selectedFiles.filesMap.set('key1', 'value1');
+selectedFiles.filesMap.set('key2', 'value2');
 
     onMounted(()=>{
         axios.get('http://localhost:3000/list',{
@@ -106,7 +132,7 @@ const responseData = ref([]);
             // authStore.logOut()
             // router.push('/login');
 
-            responseData.value = response.data;
+            filesEntityes.value = response.data;
         })
         .catch(error => {
             console.log(JSON.stringify(error))
@@ -157,7 +183,7 @@ const responseData = ref([]);
     }
 
     const handleMainCheckbox = (event) => {
-        responseData.value.forEach(item => {
+        filesEntityes.value.forEach(item => {
             item.isChecked = event.target.checked ? true : false
         })
     }
@@ -272,7 +298,7 @@ const responseData = ref([]);
         ">
       <li 
         :class="['filesListRow','hover:bg-slate-100', item?.isChecked && 'selected']"
-        v-for="item in responseData" 
+        v-for="item in filesEntityes" 
         :key="item?.id"
       >
         <div class="checker">
