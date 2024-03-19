@@ -48,3 +48,12 @@
 [] delete unusable components and views
 
 [] rewrite switch case fn to object
+
+[] find out how to add multiple files
+[] add different color scheme 3-5 and toggle controls svg colors
+
+[] refactor - replace GET, POST etc axios fetches to separated modules
+
+[] add load file progress bar component
+
+[] add filter buttons realization sortByName/sortByDate/sortBySize with toggle arrows directions ↑↓

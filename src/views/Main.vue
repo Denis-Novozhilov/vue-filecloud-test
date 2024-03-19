@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import axios from 'axios';
 
 import { useAuthStore } from '../store/authStore';
@@ -16,6 +16,17 @@ const filesStore = useFilesStore();
 let isAnyFileSelected = ref<boolean>(false);
 let isEveryFileSelected = ref<boolean>(false);
 // const filesEntityes = ref([]);
+
+const progressLoading = reactive({
+    fileName: '',
+    uploading: false,
+    uploadProgress: 0,
+    reset() {
+        this.fileName = '';
+        this.uploading = false;
+        this.uploadProgress = 0;
+    }
+})
 
 
 /*
@@ -272,10 +283,16 @@ const selectedFiles = reactive({
       const formData = new FormData();
       formData.append('file', selectedFile);
 
+    progressLoading.fileName = selectedFile.name;
+    progressLoading.uploading = true;
+
     axios.post(`http://localhost:3000/file?filename=${selectedFile.name}`, formData, {
     headers: {
         'auth-token': `Bearer ${authStore.token}`,
         'Content-Type': 'multipart/form-data'
+    },
+    onUploadProgress: progressEvent => {
+        progressLoading.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
     }
     })
     .then(response => {
@@ -292,221 +309,271 @@ const selectedFiles = reactive({
         console.log(error)
         console.error('Error uploading file:', error);
         // Обработка ошибки
-    });
+    })
+    .finally(()=>{
+        progressLoading.reset();
+        // progressLoading.fileName = '';
+        // progressLoading.uploading = false;
+        // progressLoading.uploadProgress = 0;
+    }) 
 }
 
 
 </script>
 
 <template>
-  <div>
-    <h1
-        class="
-            text-[34.5px]
-            font-bold
-            mt-[56px]
-        "
-    >Ваши файлы</h1>
-    <div
-        class="
-            h-[42px] 
-            mt-[24px]
-        ">
-        <input class="hidden" type="file" ref="fileInput" @change="handleFileChange($event)">
-        <ButtonUI bgType="common" textType="normal" msg="Добавить" @click="this.$refs.fileInput.click()"/>
-    </div>
-
-    <!-- fail list table -->
-    <ul class="
-        mt-[50px]
-        filesList
-    ">
-      <!-- filters ↓ -->
-      <li class="relative">
-
-        <!-- mail checker ↓ -->
-        <div class="checker mainChecker">
-            <label :for="'all'">
-                <input 
-                class="
-                peer/inputx 
-                appearance-none
-                " 
-                type="checkbox" 
-                :name="'all'" 
-                :id="'all'"
-                :checked="isEveryFileSelected"
-                @change="handleMainCheckbox($event)"
-                >
-                <div 
-                    class="
-                        w-[33px]
-                        h-[33px]
-                        bg-center
-                        bg-no-repeat
-                        rounded-[6px]
-                        cursor-pointer
-                        bg-[url('./assets/checkbox-unchecked.svg')]
-                        peer-checked/inputx:bg-[url('./assets/checkbox-checked.svg')]
-                        peer-focus/inputx:outline
-                        peer-focus/inputx:outline-[5px]
-                        peer-focus/inputx:outline-offset-[-5px]
-                        peer-focus/inputx:outline-blue-500
-                        peer-disabled/inputx:opacity-30
-                    "></div>
-            </label>
+    <div class="relative">
+        <div>
+        <h1
+            class="
+                text-[34.5px]
+                font-bold
+                mt-[56px]
+            "
+        >Ваши файлы</h1>
+        <div
+            class="
+                h-[42px] 
+                mt-[24px]
+            ">
+            <input class="hidden" type="file" ref="fileInput" @change="handleFileChange($event)">
+            <ButtonUI bgType="common" textType="normal" msg="Добавить" @click="this.$refs.fileInput.click()"/>
         </div>
-        <!-- mail checker ↑ -->
-
-
-        <button class="
-            fl-col1 
-            text-left
-            filterBtn
+    
+        <!-- fail list table -->
+        <ul class="
+            mt-[50px]
+            filesList
         ">
-            <div class="flex">
-                <p>Название</p>
+          <!-- filters ↓ -->
+          <li class="relative">
+    
+            <!-- mail checker ↓ -->
+            <div class="checker mainChecker">
+                <label :for="'all'">
+                    <input 
+                    class="
+                    peer/inputx 
+                    appearance-none
+                    " 
+                    type="checkbox" 
+                    :name="'all'" 
+                    :id="'all'"
+                    :checked="isEveryFileSelected"
+                    @change="handleMainCheckbox($event)"
+                    >
+                    <div 
+                        class="
+                            w-[33px]
+                            h-[33px]
+                            bg-center
+                            bg-no-repeat
+                            rounded-[6px]
+                            cursor-pointer
+                            bg-[url('./assets/checkbox-unchecked.svg')]
+                            peer-checked/inputx:bg-[url('./assets/checkbox-checked.svg')]
+                            peer-focus/inputx:outline
+                            peer-focus/inputx:outline-[5px]
+                            peer-focus/inputx:outline-offset-[-5px]
+                            peer-focus/inputx:outline-blue-500
+                            peer-disabled/inputx:opacity-30
+                        "></div>
+                </label>
+            </div>
+            <!-- mail checker ↑ -->
+    
+    
+            <button class="
+                fl-col1 
+                text-left
+                filterBtn
+            ">
+                <div class="flex">
+                    <p>Название</p>
+                    <!-- [] #task fix arrow rotation direction up/down -->
+                    <img class="block mx-5" src="../assets/arrow.svg" alt="arrow">
+                </div>
+            </button>
+    
+            <button class="
+                fl-col2 
+                filterBtn
+            ">
+            <div class="flex justify-center">
+                <p>Дата изменения</p>
                 <!-- [] #task fix arrow rotation direction up/down -->
                 <img class="block mx-5" src="../assets/arrow.svg" alt="arrow">
             </div>
-        </button>
-
-        <button class="
-            fl-col2 
-            filterBtn
-        ">
-        <div class="flex justify-center">
-            <p>Дата изменения</p>
-            <!-- [] #task fix arrow rotation direction up/down -->
-            <img class="block mx-5" src="../assets/arrow.svg" alt="arrow">
-        </div>
-        </button>
-
-        <button class="
-            fl-col3 
-            filterBtn
-        ">
-        <div class="flex justify-center">
-            <p>Размер</p>
-            <!-- [] #task fix arrow rotation direction up/down -->
-            <img class="block mx-5" src="../assets/arrow.svg" alt="arrow">
-        </div>
-        </button>
-
-      </li>  
-      <hr class="
-            mt-[7px]
-            mb-[25px]
-            border
-            border-b-[2px]
-        ">
-
-      <!-- main controlls ↓ -->
-      <div class="mb-[42px]" v-if="!isEveryFileSelected && isAnyFileSelected">
-        <ButtonUI class="h-[45px]" bgType="inverted" textType="bold" msg="Скачать выбранные"/>
-        <ButtonUI class="h-[45px]" bgType="inverted" textType="bold" msg="Удалить выбранные"/>
-      </div>
-      <div class="mb-[42px]" v-if="isEveryFileSelected">
-        <ButtonUI class="h-[45px]" bgType="inverted" textType="bold" msg="Скачать все"/>
-        <ButtonUI class="h-[45px]" bgType="inverted" textType="bold" msg="Удалить все"/>
-      </div>
-      <!-- main controlls ↑ -->
-
-      <!-- files list row ↓ -->
-      <li 
-        :class="['filesListRow','hover:bg-slate-100', item?.isChecked && 'selected']"
-        v-for="item in filesStore.filesEntities" 
-        :key="item?.id"
-      >
-        <div class="checker">
-            <label :for="`${item?.id}`">
-                <input 
-                class="
-                peer/inputx 
-                appearance-none
-                " 
-                type="checkbox" 
-                :name="`${item?.id}`" 
-                :id="`${item?.id}`"
-                :checked="item?.isChecked"
-                @change="toggleItemSelection(item)"
-                >
-                <div 
+            </button>
+    
+            <button class="
+                fl-col3 
+                filterBtn
+            ">
+            <div class="flex justify-center">
+                <p>Размер</p>
+                <!-- [] #task fix arrow rotation direction up/down -->
+                <img class="block mx-5" src="../assets/arrow.svg" alt="arrow">
+            </div>
+            </button>
+    
+          </li>  
+          <hr class="
+                mt-[7px]
+                mb-[25px]
+                border
+                border-b-[2px]
+            ">
+    
+          <!-- main controlls ↓ -->
+          <div class="mb-[42px]" v-if="!isEveryFileSelected && isAnyFileSelected">
+            <ButtonUI class="h-[45px]" bgType="inverted" textType="bold" msg="Скачать выбранные"/>
+            <ButtonUI class="h-[45px]" bgType="inverted" textType="bold" msg="Удалить выбранные"/>
+          </div>
+          <div class="mb-[42px]" v-if="isEveryFileSelected">
+            <ButtonUI class="h-[45px]" bgType="inverted" textType="bold" msg="Скачать все"/>
+            <ButtonUI class="h-[45px]" bgType="inverted" textType="bold" msg="Удалить все"/>
+          </div>
+          <!-- main controlls ↑ -->
+    
+          <!-- files list row ↓ -->
+          <li 
+            :class="['filesListRow','hover:bg-slate-100', item?.isChecked && 'selected']"
+            v-for="item in filesStore.filesEntities" 
+            :key="item?.id"
+          >
+            <div class="checker">
+                <label :for="`${item?.id}`">
+                    <input 
                     class="
-                        w-[33px]
-                        h-[33px]
-                        bg-center
-                        bg-no-repeat
-                        rounded-[6px]
-                        cursor-pointer
-                        bg-[url('./assets/checkbox-unchecked.svg')]
-                        peer-checked/inputx:bg-[url('./assets/checkbox-checked.svg')]
-                        peer-focus/inputx:outline
-                        peer-focus/inputx:outline-[5px]
-                        peer-focus/inputx:outline-offset-[-5px]
-                        peer-focus/inputx:outline-blue-500
-                        peer-disabled/inputx:opacity-30
-                    "></div>
-            </label>
+                    peer/inputx 
+                    appearance-none
+                    " 
+                    type="checkbox" 
+                    :name="`${item?.id}`" 
+                    :id="`${item?.id}`"
+                    :checked="item?.isChecked"
+                    @change="toggleItemSelection(item)"
+                    >
+                    <div 
+                        class="
+                            w-[33px]
+                            h-[33px]
+                            bg-center
+                            bg-no-repeat
+                            rounded-[6px]
+                            cursor-pointer
+                            bg-[url('./assets/checkbox-unchecked.svg')]
+                            peer-checked/inputx:bg-[url('./assets/checkbox-checked.svg')]
+                            peer-focus/inputx:outline
+                            peer-focus/inputx:outline-[5px]
+                            peer-focus/inputx:outline-offset-[-5px]
+                            peer-focus/inputx:outline-blue-500
+                            peer-disabled/inputx:opacity-30
+                        "></div>
+                </label>
+            </div>
+            <div class="fl-col1 fileName">
+                <img :src="getExtensionIcon(item?.name)"/>
+                <p 
+                class="
+                info 
+                ml-[30px]
+                pb-[5px]
+                pr-[30px]
+                overflow-x-auto
+                whitespace-nowrap
+                ">{{item?.name}}</p>
+            </div>
+            <div class="fl-col2">
+                <p class="info">{{ formatTimestamp(item?.createdAt) }}</p>
+            </div>
+            <div class="fl-col3">
+                <p class="info">{{ formatBytes(item?.size) }}</p>
+            </div>
+            <div class="
+                fl-col4
+                flex
+    
+                gap-[30px]
+            ">
+                <button class="
+                    rounded-[2px]    
+                    focus:outline
+                    focus:outline-[3px]
+                    focus:outline-stone-300
+                    focus:outline-offset-[3px]
+                    focus:border-none
+                ">
+                    <img src="../assets/edit.svg" alt="edit">
+                </button>
+                <button class="
+                    rounded-[2px]    
+                    focus:outline
+                    focus:outline-[3px]
+                    focus:outline-stone-300
+                    focus:outline-offset-[3px]
+                    focus:border-none
+                ">
+                    <img src="../assets/download.svg" alt="download">
+                </button>
+                <button class="
+                    rounded-[2px]    
+                    focus:outline
+                    focus:outline-[3px]
+                    focus:outline-stone-300
+                    focus:outline-offset-[3px]
+                    focus:border-none
+                ">
+                    <img src="../assets/delete.svg" alt="delete">
+                </button>
+            </div>
+        </li>
+        </ul>
         </div>
-        <div class="fl-col1 fileName">
-            <img :src="getExtensionIcon(item?.name)"/>
-            <p 
-            class="
-            info 
-            ml-[30px]
-            pb-[5px]
-            pr-[30px]
-            overflow-x-auto
-            whitespace-nowrap
-            ">{{item?.name}}</p>
-        </div>
-        <div class="fl-col2">
-            <p class="info">{{ formatTimestamp(item?.createdAt) }}</p>
-        </div>
-        <div class="fl-col3">
-            <p class="info">{{ formatBytes(item?.size) }}</p>
-        </div>
-        <div class="
-            fl-col4
+    
+      <!-- progress bar -->
+      <div 
+        v-if="progressLoading.uploading"
+        class="
+            sticky
             flex
-
-            gap-[30px]
+            flex-col
+            justify-between
+            items-start
+            bg-black
+            pt-[10px]
+            px-[0px]
+            w-[47vw]
+            h-[60px]
+            ml-[10px]
+            rounded-[4px]
+            bottom-[10vh]
         ">
-            <button class="
-                rounded-[2px]    
-                focus:outline
-                focus:outline-[3px]
-                focus:outline-stone-300
-                focus:outline-offset-[3px]
-                focus:border-none
+            <p class="
+                px-[56px]
+                text-[25px]
+                mb-2
+                text-white
+            ">Загрузка файла {{ progressLoading.fileName }}</p>
+            <!-- progress bar container -->
+            <div class="
+                w-[100%]
+                h-[5.5px]
+                bg-cyan-300
             ">
-                <img src="../assets/edit.svg" alt="edit">
-            </button>
-            <button class="
-                rounded-[2px]    
-                focus:outline
-                focus:outline-[3px]
-                focus:outline-stone-300
-                focus:outline-offset-[3px]
-                focus:border-none
-            ">
-                <img src="../assets/download.svg" alt="download">
-            </button>
-            <button class="
-                rounded-[2px]    
-                focus:outline
-                focus:outline-[3px]
-                focus:outline-stone-300
-                focus:outline-offset-[3px]
-                focus:border-none
-            ">
-                <img src="../assets/delete.svg" alt="delete">
-            </button>
+                <!-- progress bar value -->
+                <div 
+                :style="`width: ${progressLoading.uploadProgress}%`"
+                class="
+                    h-[5.5px]
+                    bg-blue-600
+                ">
+                </div>
+
+            </div>
         </div>
-    </li>
-    </ul>
-  </div>
+    </div>
 </template>
 
 <style scope>
