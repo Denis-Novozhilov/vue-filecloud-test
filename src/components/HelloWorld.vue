@@ -45,3 +45,4 @@ const store = useStore();
   color: #888;
 }
 </style>
+../store/fileStore

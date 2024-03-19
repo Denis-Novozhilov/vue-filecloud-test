@@ -1,15 +1,20 @@
 <script lang="ts" setup>
-import { onMounted, reactive, ref } from 'vue';
-import { useStore } from '../store';
+import { onMounted, ref } from 'vue';
 import axios from 'axios';
+
 import { useAuthStore } from '../store/authStore';
+import { useFilesStore } from '../store/fileStore';
+
 import { formatTimestamp } from '../helpers/timeFormatter';
 import { formatBytes } from '../helpers/sizeFormatter';
 // import { storeToRefs } from 'pinia';
 
 const authStore = useAuthStore();
+const filesStore = useFilesStore();
 
-const filesEntityes = ref([]);
+let isAnyFileSelected = ref<boolean>(false);
+let isEveryFileSelected = ref<boolean>(false);
+// const filesEntityes = ref([]);
 
 
 /*
@@ -34,8 +39,8 @@ const selectedFiles = reactive({
 
 */
 
-selectedFiles.filesMap.set('key1', 'value1');
-selectedFiles.filesMap.set('key2', 'value2');
+// selectedFiles.filesMap.set('key1', 'value1');
+// selectedFiles.filesMap.set('key2', 'value2');
 
     onMounted(()=>{
         axios.get('http://localhost:3000/list',{
@@ -132,7 +137,8 @@ selectedFiles.filesMap.set('key2', 'value2');
             // authStore.logOut()
             // router.push('/login');
 
-            filesEntityes.value = response.data;
+            // filesEntityes.value = response.data;
+            filesStore.setFileEntities(response.data);
         })
         .catch(error => {
             console.log(JSON.stringify(error))
@@ -140,7 +146,7 @@ selectedFiles.filesMap.set('key2', 'value2');
         });
     })
 
-    const store = useStore();
+    // const store = useStore();
 
     // [] task remove to helpers and improve with object
     const getExtensionIcon = (fileName = 'default.file') => {
@@ -170,22 +176,69 @@ selectedFiles.filesMap.set('key2', 'value2');
             return `./src/assets/${res}.svg`
     }
 
-    const handleItemCheckbox = (item) => {
+    const toggleItemSelection = (item) => {
+
         // ваша логика здесь
         // например, если нужно добавить класс при выборе, то можно сделать так:
         if (item.isChecked) {
+            
+            // !!! REMOVE FROM filesStore.selectedFiles
+            filesStore.removeSelected(`${item.id}`)
+
             item.isChecked = false; // или в зависимости от логики
             // убираем стиль или класс, который применяется при выборе
+
         } else {
+            
             item.isChecked = true; // или в зависимости от логики
             // добавляем стиль или класс, который применяется при выборе
+
+            // !!! ADD TO filesStore.selectedFiles
+            filesStore.addSelected(item.id, item)
+
+        }
+
+        // IN THE END CHECK selectedFiles.size
+        // AND CHANGE isAnyFileSelected if necessary
+        // AND CHANGE isEveryFileSelected if necessary
+        if (!Boolean(filesStore.getQuantitySelected)) {
+            isAnyFileSelected.value = false;
+        } else {
+            isAnyFileSelected.value = true;
+        }
+
+        if (Boolean(filesStore.getQuantitySelected) && filesStore.getQuantitySelected === filesStore.getQuantityEntities) {
+            isEveryFileSelected.value = true;
+        } else {
+            isEveryFileSelected.value = false;
         }
     }
 
     const handleMainCheckbox = (event) => {
-        filesEntityes.value.forEach(item => {
-            item.isChecked = event.target.checked ? true : false
-        })
+        // filesEntityes.value.forEach(item => {
+        //     item.isChecked = event.target.checked ? true : false
+        // })
+        const condition = event.target.checked 
+
+        if (condition) {
+
+            filesStore.filesEntities.forEach(item => {
+                item.isChecked = true;
+                filesStore.addSelected(`${item.id}`, item);
+            })
+
+            isEveryFileSelected.value = true;
+            
+        // SET All TO SELECTED
+        } else {
+            filesStore.filesEntities.forEach(item => {
+                item.isChecked = false
+            })
+
+            filesStore.clearAllSelected();
+
+            isEveryFileSelected.value = false;
+        }
     }
 
     // const { name, number } = storeToRefs(store);
@@ -219,10 +272,10 @@ selectedFiles.filesMap.set('key2', 'value2');
         mt-[50px]
         filesList
     ">
-      <!-- filters -->
+      <!-- filters ↓ -->
       <li class="relative">
 
-        <!-- mail checker -->
+        <!-- mail checker ↓ -->
         <div class="checker mainChecker">
             <label :for="'all'">
                 <input 
@@ -233,6 +286,7 @@ selectedFiles.filesMap.set('key2', 'value2');
                 type="checkbox" 
                 :name="'all'" 
                 :id="'all'"
+                :checked="isEveryFileSelected"
                 @change="handleMainCheckbox($event)"
                 >
                 <div 
@@ -253,6 +307,7 @@ selectedFiles.filesMap.set('key2', 'value2');
                     "></div>
             </label>
         </div>
+        <!-- mail checker ↑ -->
 
 
         <button class="
@@ -298,21 +353,21 @@ selectedFiles.filesMap.set('key2', 'value2');
         ">
       <li 
         :class="['filesListRow','hover:bg-slate-100', item?.isChecked && 'selected']"
-        v-for="item in filesEntityes" 
+        v-for="item in filesStore.filesEntities" 
         :key="item?.id"
       >
         <div class="checker">
-            <label :for="item?.id">
+            <label :for="`${item?.id}`">
                 <input 
                 class="
                 peer/inputx 
                 appearance-none
                 " 
                 type="checkbox" 
-                :name="item?.id" 
-                :id="item?.id"
+                :name="`${item?.id}`" 
+                :id="`${item?.id}`"
                 :checked="item?.isChecked"
-                @change="handleItemCheckbox(item)"
+                @change="toggleItemSelection(item)"
                 >
                 <div 
                     class="
@@ -497,4 +552,4 @@ selectedFiles.filesMap.set('key2', 'value2');
         transition duration-300
     }   
 
-</style>
+</style>../store/fileStore
