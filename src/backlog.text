@@ -57,3 +57,77 @@
 [] add load file progress bar component
 
 [] add filter buttons realization sortByName/sortByDate/sortBySize with toggle arrows directions ↑↓
+
+[] refactor progress component to Separated UI component
+[] add to progress condition success [ Add / Delete / Rename ]
+    Файл Название табличного файла.xls успешно загружен with symbol round (v)
+[] add to progress condition error  [ Add / Delete / Rename ]
+    Файл Название табличного файла.xls не был загружен with red style
+[] refactor progressEntity.message to constants
+
+[] HANDLE CASE IF YOU TRY UPLOAD EXISTED FILE (save version(copy))
+
+[] try to add cancel
+Добавление функционала отмены процесса загрузки или удаления файла до его завершения может быть достигнуто путем добавления кнопки "Отмена" и соответствующей логики обработчика события клика на эту кнопку. Давайте добавим кнопку "Отмена" и логику для неё.
+
+Добавьте кнопку "Отмена" в элемент, отображающий процесс загрузки или удаления файла. Например:
+html
+Copy code
+<button class="rounded-[2px] focus:outline focus:outline-[3px] focus:outline-stone-300 focus:outline-offset-[3px] focus:border-none" @click="cancelProcess">
+    <img src="../assets/cancel.svg" alt="cancel">
+</button>
+В соответствующих обработчиках событий (handleFileChange и handleFileDelete) добавьте логику для отмены процесса передачи данных на сервер. Внутри методов handleFileChange и handleFileDelete определите новый метод cancelProcess, который будет вызываться при нажатии на кнопку "Отмена". Этот метод будет отменять запрос Axios, используя Axios CancelToken.
+Вот пример реализации:
+
+javascript
+Copy code
+import { CancelToken } from 'axios';
+
+// Внутри вашего компонента Vue
+const cancelSource = axios.CancelToken.source();
+
+const handleFileChange = (event) => {
+    // ...
+
+    axios.post(`http://localhost:3000/file?filename=${selectedFile.name}`, formData, {
+        cancelToken: cancelSource.token, // Передаем токен отмены запроса
+        // остальные параметры запроса
+    })
+    .then(response => {
+        // Обработка успешного ответа
+    })
+    .catch(error => {
+        // Обработка ошибки
+    })
+    .finally(() => {
+        // Сброс прогресса и т.д.
+    });
+}
+
+const handleFileDelete = (item) => {
+    // ...
+
+    axios.delete(`http://localhost:3000/file?filename=${item.name}`, {
+        cancelToken: cancelSource.token, // Передаем токен отмены запроса
+        // остальные параметры запроса
+    })
+    .then(response => {
+        // Обработка успешного ответа
+    })
+    .catch(error => {
+        // Обработка ошибки
+    })
+    .finally(() => {
+        // Сброс прогресса и т.д.
+    });
+}
+
+const cancelProcess = () => {
+    cancelSource.cancel('Запрос отменен пользователем'); // Отменяем запрос с помощью токена отмены
+}
+Теперь, когда пользователь нажимает на кнопку "Отмена", вызывается метод cancelProcess, который отменяет соответствующий запрос Axios.
+
+
+
+
+

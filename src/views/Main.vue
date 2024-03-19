@@ -17,12 +17,14 @@ let isAnyFileSelected = ref<boolean>(false);
 let isEveryFileSelected = ref<boolean>(false);
 // const filesEntityes = ref([]);
 
-const progressLoading = reactive({
+const progressEntity = reactive({
     fileName: '',
+    message: '',
     uploading: false,
     uploadProgress: 0,
     reset() {
         this.fileName = '';
+        this.message = '';
         this.uploading = false;
         this.uploadProgress = 0;
     }
@@ -272,51 +274,99 @@ const selectedFiles = reactive({
 
     */
 
+        const selectedFile = event.target.files[0];
 
 
-      const selectedFile = event.target.files[0];
-      console.log(`selectedFile`)
-      console.log(selectedFile)
-      console.log(`selectedFile.name`)
-      console.log(selectedFile.name)
+        const formData = new FormData();
+        formData.append('file', selectedFile);
 
-      const formData = new FormData();
-      formData.append('file', selectedFile);
+        progressEntity.message = 'Загрузка файла';
+        progressEntity.fileName = selectedFile.name;
+        progressEntity.uploading = true;
 
-    progressLoading.fileName = selectedFile.name;
-    progressLoading.uploading = true;
-
-    axios.post(`http://localhost:3000/file?filename=${selectedFile.name}`, formData, {
-    headers: {
-        'auth-token': `Bearer ${authStore.token}`,
-        'Content-Type': 'multipart/form-data'
-    },
-    onUploadProgress: progressEvent => {
-        progressLoading.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
+        axios.post(`http://localhost:3000/file?filename=${selectedFile.name}`, formData, {
+        headers: {
+            'auth-token': `Bearer ${authStore.token}`,
+            'Content-Type': 'multipart/form-data'
+        },
+        onUploadProgress: progressEvent => {
+            progressEntity.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
+        }
+        })
+        .then(response => {
+            console.log(`response`)
+            console.log(response)
+            console.log('File uploaded successfully:', response.data);
+            // Обработка успешного ответа
+            filesStore.setFileEntities(response.data)
+            // [] #task find out how to add multiple files
+            // [] #task add different color scheme 3-5 and toggle controls svg colors
+        })
+        .catch(error => {
+            console.log(`error`)
+            console.log(error)
+            console.error('Error uploading file:', error);
+            // Обработка ошибки
+        })
+        .finally(()=>{
+            progressEntity.reset();
+        }) 
     }
-    })
-    .then(response => {
-        console.log(`response`)
-        console.log(response)
-        console.log('File uploaded successfully:', response.data);
-        // Обработка успешного ответа
-        filesStore.setFileEntities(response.data)
-        // [] #task find out how to add multiple files
-        // [] #task add different color scheme 3-5 and toggle controls svg colors
-    })
-    .catch(error => {
-        console.log(`error`)
-        console.log(error)
-        console.error('Error uploading file:', error);
-        // Обработка ошибки
-    })
-    .finally(()=>{
-        progressLoading.reset();
-        // progressLoading.fileName = '';
-        // progressLoading.uploading = false;
-        // progressLoading.uploadProgress = 0;
-    }) 
-}
+
+    const handleFileDelete = (item) => {
+    /*
+
+        http://localhost:3000/file?filename=Название файла с изображением.png
+        
+        item = 
+        {
+            "id": 999,
+            "name": "file-for-test.xls",
+            "createdAt": 1615231817551,
+            "editedAt": 1615231817551,
+            "size": 1258291
+        }
+    */
+
+        progressEntity.message = 'Удаление файла';
+        progressEntity.fileName = item.name;
+        progressEntity.uploading = true;
+
+        axios.delete(`http://localhost:3000/file?filename=${item.name}`, {
+            headers: {
+                'auth-token': `Bearer ${authStore.token}`,
+            },
+            onDownloadProgress: progressEvent => {
+                console.log(`progressEvent`)
+                console.log(progressEvent)
+                progressEntity.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
+            }
+        })
+        .then(response => {
+            filesStore.setFileEntities(response.data)
+            // [] #task find out how to add multiple files
+            // [] #task add different color scheme 3-5 and toggle controls svg colors
+        })
+        .catch(error => {
+            console.log(`error`)
+            console.log(error)
+            console.error('Error uploading file:', error);
+            // [] #task Обработка ошибки
+        })
+        .finally(()=>{
+            progressEntity.reset();
+        }) 
+
+/**
+    Код, который вы предоставили, кажется правильным с точки зрения обработки прогресса. Проблема, скорее всего, в том, что метод axios.delete не возвращает информацию о прогрессе удаления файла. Поскольку удаление файла - операция, которая происходит на сервере, нет способа получить прогресс удаления через HTTP-запрос в обычном режиме.
+
+    Как решение, вы можете показывать пользователю индикатор загрузки на время выполнения запроса и затем скрывать его при завершении запроса. Однако для отслеживания реального прогресса удаления файла на сервере вам может потребоваться использовать другие методы, например, уведомления от сервера о прогрессе выполнения операции удаления или отслеживание прогресса удаления на клиенте через другие механизмы, предоставляемые сервером или API.
+
+    Таким образом, проблема не в вашем коде, а в том, что HTTP DELETE запросы обычно не предоставляют информацию о прогрессе удаления файла.
+ */
+
+
+    }
 
 
 </script>
@@ -523,8 +573,9 @@ const selectedFiles = reactive({
                     focus:outline-[3px]
                     focus:outline-stone-300
                     focus:outline-offset-[3px]
-                    focus:border-none
-                ">
+                    focus:border-none"
+                    @click="handleFileDelete(item)"
+                >
                     <img src="../assets/delete.svg" alt="delete">
                 </button>
             </div>
@@ -534,7 +585,7 @@ const selectedFiles = reactive({
     
       <!-- progress bar -->
       <div 
-        v-if="progressLoading.uploading"
+        v-if="progressEntity.uploading"
         class="
             sticky
             flex
@@ -555,7 +606,7 @@ const selectedFiles = reactive({
                 text-[25px]
                 mb-2
                 text-white
-            ">Загрузка файла {{ progressLoading.fileName }}</p>
+            ">{{progressEntity.message}} {{ progressEntity.fileName }}</p>
             <!-- progress bar container -->
             <div class="
                 w-[100%]
@@ -564,7 +615,7 @@ const selectedFiles = reactive({
             ">
                 <!-- progress bar value -->
                 <div 
-                :style="`width: ${progressLoading.uploadProgress}%`"
+                :style="`width: ${progressEntity.uploadProgress}%`"
                 class="
                     h-[5.5px]
                     bg-blue-600
@@ -578,8 +629,6 @@ const selectedFiles = reactive({
 
 <style scope>
     .filesList { @apply
-        border
-        border-teal-600
         min-w-[1240px]
         mb-[100px]
     }
