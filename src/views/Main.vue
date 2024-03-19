@@ -245,6 +245,57 @@ const selectedFiles = reactive({
     }
 
     // const { name, number } = storeToRefs(store);
+
+    const handleFileChange = (event) => {
+
+    /*
+    
+        http://localhost:3000/file?filename=new file name with spaces.png
+
+        lastModified: 1710570305205
+        lastModifiedDate: Sat Mar 16 2024 08:25:05 GMT+0200 (Восточная Европа, стандартное время) {}
+        name: "frame-1-0.png"
+        size: 70239
+        type: "image/png"
+        webkitRelativePath: ""
+
+    */
+
+
+
+      const selectedFile = event.target.files[0];
+      console.log(`selectedFile`)
+      console.log(selectedFile)
+      console.log(`selectedFile.name`)
+      console.log(selectedFile.name)
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+    axios.post(`http://localhost:3000/file?filename=${selectedFile.name}`, formData, {
+    headers: {
+        'auth-token': `Bearer ${authStore.token}`,
+        'Content-Type': 'multipart/form-data'
+    }
+    })
+    .then(response => {
+        console.log(`response`)
+        console.log(response)
+        console.log('File uploaded successfully:', response.data);
+        // Обработка успешного ответа
+        filesStore.setFileEntities(response.data)
+        // [] #task find out how to add multiple files
+        // [] #task add different color scheme 3-5 and toggle controls svg colors
+    })
+    .catch(error => {
+        console.log(`error`)
+        console.log(error)
+        console.error('Error uploading file:', error);
+        // Обработка ошибки
+    });
+}
+
+
 </script>
 
 <template>
@@ -261,7 +312,8 @@ const selectedFiles = reactive({
             h-[42px] 
             mt-[24px]
         ">
-        <ButtonUI bgType="common" textType="normal" msg="Добавить"/>
+        <input class="hidden" type="file" ref="fileInput" @change="handleFileChange($event)">
+        <ButtonUI bgType="common" textType="normal" msg="Добавить" @click="this.$refs.fileInput.click()"/>
     </div>
 
     <!-- fail list table -->
