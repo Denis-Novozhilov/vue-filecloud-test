@@ -7,6 +7,7 @@ import { useFilesStore } from '../store/fileStore';
 
 import { formatTimestamp } from '../helpers/timeFormatter';
 import { formatBytes } from '../helpers/sizeFormatter';
+import ButtonUI from '../components/ButtonUI.vue';
 // import { storeToRefs } from 'pinia';
 
 const authStore = useAuthStore();
@@ -229,6 +230,7 @@ const selectedFiles = reactive({
 
             isEveryFileSelected.value = true;
             
+            
         // SET All TO SELECTED
         } else {
             filesStore.filesEntities.forEach(item => {
@@ -238,6 +240,7 @@ const selectedFiles = reactive({
             filesStore.clearAllSelected();
 
             isEveryFileSelected.value = false;
+            isAnyFileSelected.value = false;
         }
     }
 
@@ -253,19 +256,13 @@ const selectedFiles = reactive({
             mt-[56px]
         "
     >Ваши файлы</h1>
-    <button
+    <div
         class="
-            border
-            rounded-md
-            w-[120px] 
             h-[42px] 
-            p-0
             mt-[24px]
-            bg-blue-700
-            text-white
-            text-[19px]    
-        "
-    >Добавить</button>
+        ">
+        <ButtonUI bgType="common" textType="normal" msg="Добавить"/>
+    </div>
 
     <!-- fail list table -->
     <ul class="
@@ -300,8 +297,8 @@ const selectedFiles = reactive({
                         bg-[url('./assets/checkbox-unchecked.svg')]
                         peer-checked/inputx:bg-[url('./assets/checkbox-checked.svg')]
                         peer-focus/inputx:outline
-                        peer-focus/inputx:outline-[4px]
-                        peer-focus/inputx:outline-offset-[-4px]
+                        peer-focus/inputx:outline-[5px]
+                        peer-focus/inputx:outline-offset-[-5px]
                         peer-focus/inputx:outline-blue-500
                         peer-disabled/inputx:opacity-30
                     "></div>
@@ -351,6 +348,19 @@ const selectedFiles = reactive({
             border
             border-b-[2px]
         ">
+
+      <!-- main controlls ↓ -->
+      <div class="mb-[42px]" v-if="!isEveryFileSelected && isAnyFileSelected">
+        <ButtonUI class="h-[45px]" bgType="inverted" textType="bold" msg="Скачать выбранные"/>
+        <ButtonUI class="h-[45px]" bgType="inverted" textType="bold" msg="Удалить выбранные"/>
+      </div>
+      <div class="mb-[42px]" v-if="isEveryFileSelected">
+        <ButtonUI class="h-[45px]" bgType="inverted" textType="bold" msg="Скачать все"/>
+        <ButtonUI class="h-[45px]" bgType="inverted" textType="bold" msg="Удалить все"/>
+      </div>
+      <!-- main controlls ↑ -->
+
+      <!-- files list row ↓ -->
       <li 
         :class="['filesListRow','hover:bg-slate-100', item?.isChecked && 'selected']"
         v-for="item in filesStore.filesEntities" 
@@ -380,8 +390,8 @@ const selectedFiles = reactive({
                         bg-[url('./assets/checkbox-unchecked.svg')]
                         peer-checked/inputx:bg-[url('./assets/checkbox-checked.svg')]
                         peer-focus/inputx:outline
-                        peer-focus/inputx:outline-[4px]
-                        peer-focus/inputx:outline-offset-[-4px]
+                        peer-focus/inputx:outline-[5px]
+                        peer-focus/inputx:outline-offset-[-5px]
                         peer-focus/inputx:outline-blue-500
                         peer-disabled/inputx:opacity-30
                     "></div>
