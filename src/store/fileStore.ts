@@ -30,6 +30,19 @@ export const useFilesStore = defineStore('useFilesStore', {
 		pushFileEntity(value: FileEntity) {
 			this.filesEntities.push(value);
 		},
+		updateEntity(value: FileEntity) {
+			// // delete
+			// this.filesEntities = this.filesEntities.filter((el) => el.id !== value.id);
+			// // add new
+			// this.filesEntities.push(value);
+			// this.filesEntities = this.filesEntities.map((el) => {
+			// 	if (el.id === value.id) {
+			// 		el = value;
+			// 	}
+			// });
+			this.filesEntities = this.filesEntities.map((el) => (el.id === value.id ? value : el));
+			// const etityToUpdate = this.filesEntities.find((el) => el.id === value.id);
+		},
 		deleteFileEntity(value: FileEntity) {
 			this.filesEntities = this.filesEntities.filter((el) => el.id !== value.id);
 		},

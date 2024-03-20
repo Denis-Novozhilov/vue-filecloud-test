@@ -162,10 +162,14 @@ const selectedFiles = reactive({
 
     // const store = useStore();
 
+    const ejectName = (fileName = 'default.file') => fileName.split(".").slice(0,-1).join('.');
+    const ejectExtension = (fileName = 'default.file') => fileName?.split(".").at(-1).toUpperCase();
+
     // [] task remove to helpers and improve with object
     const getExtensionIcon = (fileName = 'default.file') => {
 
-        const extension = fileName?.split(".").at(-1).toUpperCase();
+        // const extension = fileName?.split(".").at(-1).toUpperCase();
+        const extension = ejectExtension(fileName);
 
         let res;
 
@@ -368,6 +372,102 @@ const selectedFiles = reactive({
 
     }
 
+    const updateWidth = (event, {id}, _this) => {
+        
+        // const value = event.target.value.trim()
+        const value = event.target.value;
+
+        const inputRef = _this.$refs[`fileName${id}`];
+
+        inputRef[0].style.width = `${value.length * 17.5 + 8}px`;
+    }
+
+    const handleFileRename = (event, item, _this, oldName) => {
+
+        let value = event.target.value.trim()
+
+        // prevent adding empty space and changing to empty string
+        // if (value === oldName || value === "") {
+        //     return
+        // }
+        if (value === oldName) {
+            return
+        }
+        if (value === "") {
+            value = '_'
+        }
+
+        const _inputRef = _this.$refs[`fileName${item.id}`][0];
+  
+
+        // update input width
+        _inputRef.style.width = `${value.length * 17.8 + 8}px`;
+
+    /*
+
+        http://localhost:3000/file?filename=Название файла с изображением.png
+        
+        item = 
+        {
+            "id": 999,
+            "name": "file-for-test.xls",
+            "createdAt": 1615231817551,
+            "editedAt": 1615231817551,
+            "size": 1258291
+        }
+    */
+
+
+        progressEntity.message = 'Переименование файла';
+        // progressEntity.fileName = '';
+        progressEntity.uploading = true;
+
+        axios.put(`http://localhost:3000/file?filename=${item.name}`, {
+            name: `${value}.${ejectExtension(item?.name).toLowerCase()}`
+        },{
+            headers: {
+                'auth-token': `Bearer ${authStore.token}`,
+                "content-type": "application/json; charset=utf-8"
+            },
+            onUploadProgress: progressEvent => {
+                console.log(`onUploadProgress`)
+                console.log(`progressEvent`)
+                console.log(progressEvent)
+                progressEntity.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
+            }
+        })
+        .then(response => {
+            // filesStore.setFileEntities(response.data)
+            console.log(`response.data`)
+            console.log(response.data)
+
+                /*
+                    {
+                        "id": 999,
+                        "name": "file-for-test222xls",
+                        "createdAt": 1615231817551,
+                        "editedAt": 1615231817551,
+                        "size": 1258291
+                    }
+                */
+            // filesStore.deleteFileEntity(item);
+            // filesStore.pushFileEntity(response.data);
+            filesStore.updateEntity(response.data);
+
+            // [] #task find out how to add multiple files
+            // [] #task add different color scheme 3-5 and toggle controls svg colors
+        })
+        .catch(error => {
+            console.log(`error`)
+            console.log(error)
+            console.error('Error uploading file:', error);
+            // [] #task Обработка ошибки
+        })
+        .finally(()=>{
+            progressEntity.reset();
+        }) 
+    }
+
 
 </script>
 
@@ -525,7 +625,32 @@ const selectedFiles = reactive({
             </div>
             <div class="fl-col1 fileName">
                 <img :src="getExtensionIcon(item?.name)"/>
+
+                <!-- :style="`width: ${ejectName(item?.name).length * (ejectName(item?.name).length > 15 ? 16: 12.5)}px`" -->
+                <input 
+                    type="text" 
+                    :ref="`fileName${item.id}`" 
+                    :placeholder="ejectName(item?.name)"
+                    :value="ejectName(item?.name)"
+                    :style="`width: ${ejectName(item?.name).length * 17.5 + 8}px`"
+                    class="
+                        text-[30px]
+                        font-mono
+                        ml-[23px]
+                        rounded-md
+                        px-[5px]
+                        text-ellipsis
+                        cursor-text
+                    "
+                    @input="updateWidth($event, item, this)"
+                    @change="handleFileRename($event,item, this, ejectName(item?.name))"
+                />
                 <p 
+                class="
+                info 
+                mt-[5px]
+                ">{{`.${ejectExtension(item?.name).toLowerCase()}`}}</p>
+                <!-- <p 
                 class="
                 info 
                 ml-[30px]
@@ -533,7 +658,7 @@ const selectedFiles = reactive({
                 pr-[30px]
                 overflow-x-auto
                 whitespace-nowrap
-                ">{{item?.name}}</p>
+                ">{{item?.name}}</p> -->
             </div>
             <div class="fl-col2">
                 <p class="info">{{ formatTimestamp(item?.createdAt) }}</p>
@@ -554,7 +679,14 @@ const selectedFiles = reactive({
                     focus:outline-stone-300
                     focus:outline-offset-[3px]
                     focus:border-none
-                ">
+                    "
+                    @click="this.$refs[`fileName${item.id}`][0].focus()"
+                    >
+                    <!-- @click="handleFileRename(item.id, this)" -->
+                    
+                    <!-- @click="this.$refs[`fileName${item.id}`][0].click()" -->
+                    <!-- @click="this.$refs[`fileName${item.id}`][0].click()" -->
+                    <!-- @click="this.$refs[`fileName${item.id}`].click()" -->
                     <img src="../assets/edit.svg" alt="edit">
                 </button>
                 <button class="

@@ -67,6 +67,14 @@
 
 [] HANDLE CASE IF YOU TRY UPLOAD EXISTED FILE (save version(copy))
 
+[] webstorm use
+
+[] linters and IDE settings include 
+
+[] For File Name Inputs Update background COLOR for selected/hover/simple conditions
+
+[] change all parentecies to one style
+
 [] try to add cancel
 Добавление функционала отмены процесса загрузки или удаления файла до его завершения может быть достигнуто путем добавления кнопки "Отмена" и соответствующей логики обработчика события клика на эту кнопку. Давайте добавим кнопку "Отмена" и логику для неё.
 
