@@ -30,6 +30,10 @@ export const useFilesStore = defineStore('useFilesStore', {
 		pushFileEntity(value: FileEntity) {
 			this.filesEntities.push(value);
 		},
+		// #task [] delete fn if not use
+		addEntitiesGroup(value: FileEntity[]) {
+			this.filesEntities = this.filesEntities.concat(value);
+		},
 		updateEntity(value: FileEntity) {
 			// // delete
 			// this.filesEntities = this.filesEntities.filter((el) => el.id !== value.id);
@@ -51,13 +55,15 @@ export const useFilesStore = defineStore('useFilesStore', {
 		},
 
 		// actions for selected
-		addSelected(key: string | number, value: FileEntity) {
+		addSelected(value: FileEntity) {
+			let key = value.id;
 			if (typeof key === 'number') {
 				key = String(key);
 			}
 			this.selectedFiles.set(key, value);
 		},
-		removeSelected(key: string | number) {
+		removeSelected(value: FileEntity) {
+			let key = value.id;
 			if (typeof key === 'number') {
 				key = String(key);
 			}

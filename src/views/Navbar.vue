@@ -16,7 +16,29 @@
         })
         .then(() => {
             authStore.logOut()
-            router.push('/login');
+            // !!! try again
+            // !* #task [] refactor logout here 
+            // !* #task [] checkUp Again if this issue fixed after store puts in inputs
+            // router.push({
+            //     name: 'Main'
+            // });
+            router.push({
+                name: 'Login'
+            });
+            // router.push({
+            //     name: 'Settings'
+            // });
+            // router.push('/login');
+            // setTimeout(() => { 
+            //     router.push('/');
+            //  }, 1000)
+            // setTimeout(() => { 
+            //     router.push('/about');
+            //  }, 1000)
+            // setTimeout(() => { 
+            //     router.push('/');
+            //  }, 1000)
+
         })
         .catch(error => {
             console.log(JSON.stringify(error.response.data))
@@ -25,6 +47,7 @@
 </script>
 
 <template>
+    <!-- #task [] refactor - delete classes and replase tailwind style classes -->
     <div :class="['h-[70px]', 'flex', isLogged ? 'loggedIn' : 'loggedOut']" @click="$router.push('/')">
         <button class="cursor-pointer pt-2 mb-1">
             <img  class="w-[130px]" src="../assets/skillplace-logo.svg" alt="logo-skillplace">

@@ -25,6 +25,8 @@
 
 [] add get login request
 
+[] ? Возможно при переименовании файла - при нажатии на кнопку ещё и выделять весь текст?
+
 [] adaptive
 
 [] clear all consoles
@@ -33,9 +35,15 @@
 
 [] fix all ts errors
 
+[] how to prewent redundant refresh components
+
 [] check and fix all comments in code such as //[] #task
 
+[] add different color scheme 3-5 and toggle controls svg colors
+
 [] fix extrimal html template zoom in/out breakpoints
+
+! [] FIX BUG когда два раза загружаем одинаковые наборы файлов - удаляются по двое
 
 [] delete all comments
 
@@ -74,6 +82,39 @@
 [] For File Name Inputs Update background COLOR for selected/hover/simple conditions
 
 [] change all parentecies to one style
+
+[] Improve progress bar html layout
+
+[] ADD vee validate - hov much big size file we can send to the server 
+
+[] ADD handling of errors if every axios load/download/rename/delete fail 
+
+
+[] ADD Chengable color schemes
+
+[] ADD color systems
+
+[] ADD propper fonts
+
+[] ADD sorting controllers functionality
+
+
+? [] When ERROR message should be closed? on (x) button or after few seconds?
+ - few seconds and all
+
+? [] ADD popup prompts functionality??
+ - Optional yes / no
+
+? [] ADD cancel response functionality??
+ - Optinoal 
+
+? [] ADD multi files load to server functionality??
+ - Yes сделать 
+
+? [] HOW validate file sizes (how many Mb)??
+ - 10Mb
+
+
 
 [] try to add cancel
 Добавление функционала отмены процесса загрузки или удаления файла до его завершения может быть достигнуто путем добавления кнопки "Отмена" и соответствующей логики обработчика события клика на эту кнопку. Давайте добавим кнопку "Отмена" и логику для неё.

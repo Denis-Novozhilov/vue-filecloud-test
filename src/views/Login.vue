@@ -22,7 +22,10 @@ const login = () => {
             authStore.toggleLoggedStatus(true);
             authStore.setToken(response.data);
             // Перенаправляем пользователя на другую страницу
-            router.push('/');
+            router.push({
+                name: 'Main'
+            });
+            // [] task {} obj - const for routing (not strings)
         })
         .catch(error => {
             console.log(JSON.stringify(error.response.data))
