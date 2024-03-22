@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { FileEntity } from '../types/fileEntity';
 
-export const useFilesStore = defineStore('useFilesStore', {
+export const useFilesStore = defineStore('filesStore', {
 	state: () => ({
 		filesEntities: [] as FileEntity[],
 		selectedFiles: new Map<string, FileEntity>()
@@ -56,14 +56,14 @@ export const useFilesStore = defineStore('useFilesStore', {
 
 		// actions for selected
 		addSelected(value: FileEntity) {
-			let key = value.id;
+			let key: string | number = value.id;
 			if (typeof key === 'number') {
 				key = String(key);
 			}
 			this.selectedFiles.set(key, value);
 		},
 		removeSelected(value: FileEntity) {
-			let key = value.id;
+			let key: string | number = value.id;
 			if (typeof key === 'number') {
 				key = String(key);
 			}

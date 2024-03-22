@@ -1,12 +1,17 @@
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 import axios from 'axios';
+
+import { useAuthStore } from '../store/authStore';
+import { useFilesStore } from '../store/fileStore';
+
 import { formatTimestamp } from '../helpers/timeFormatter';
 import { formatBytes } from '../helpers/sizeFormatter';
 import ButtonUI from '../components/ButtonUI.vue';
-import { useStore } from '../store';
+import { FileEntity } from '../types/fileEntity';
 
-const { authStore, filesStore } = useStore();
+const authStore = useAuthStore();
+const filesStore = useFilesStore();
 
 let isAnyFileSelected = ref<boolean>(false);
 let isEveryFileSelected = ref<boolean>(false);

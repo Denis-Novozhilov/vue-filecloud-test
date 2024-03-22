@@ -20,6 +20,8 @@
 [] add custom colors tailwind
 [] add custom font families tailwind
 
+[v] #task fix FILTERS arrow rotation direction up/down
+
 [] add disable style on button login
 [] add warning style on login inputs
 
@@ -28,6 +30,14 @@
 [] ? Возможно при переименовании файла - при нажатии на кнопку ещё и выделять весь текст?
 
 [] adaptive
+
+[] FIX template progressBar Bug with "delamination" elements
+
+[] Separate code for different UIComponants And Helpers
+
+[] improve layout on the 2nd and 3rd screen!
+
+[] Is there needed or not - keep sorting files after adding files?
 
 [] clear all consoles
 

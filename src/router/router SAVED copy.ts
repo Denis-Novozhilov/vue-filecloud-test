@@ -1,5 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { useStore } from '../store/index.ts';
+import { useAuthStore } from '../store/authStore.ts';
+
+// import { authStore } from '../store';
+
+import { setup } from '../store/index.ts';
 
 const routes = [
 	{
@@ -31,9 +35,16 @@ const router = createRouter({
 	routes
 });
 
-router.beforeEach((to, from, next) => {
-	const { authStore } = useStore();
+// #task все [] сторы в инндексный файлик - см скрины new Vue etc...
+// const authStore = useAuthStore();
 
+router.beforeEach((to, from, next) => {
+	// #task [] refactor - EJECT store initialization from here
+	// const authStore = useAuthStore();
+	// authStore;
+	// #task [] watch later
+	// console.log(`to`)
+	// console.log(to)
 	if (!authStore.isLogged && to.name !== 'Login') {
 		next({ name: 'Login' });
 	} else if (authStore.isLogged && to.name === 'Login') {
