@@ -167,64 +167,46 @@ const handleMainCheckbox = (event) => {
     }
 }
 
-
-const uploadFile = (fileName, formData) => {
-    // #task [] refactor PARENT func and CHILD recursive functions
-    // #task [] refactor ↑ ↓ wit parent function
-    progressEntity.reset();
-    progressEntity.message = 'Загрузка файла';
-    progressEntity.fileName = fileName;
-    progressEntity.uploading = true;
-
-    // #task [] refactor url to constants
-    // #task [] refactor headers to constants
-    // #task [] refactor eject onUploadProgress to helpers
-    return axios.post(`http://localhost:3000/file?filename=${fileName}`, formData, {
-        headers: {
-            'auth-token': `Bearer ${authStore.token}`,
-            'Content-Type': 'multipart/form-data'
-        },
-        onUploadProgress: progressEvent => {
-            progressEntity.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
-        }
-    });
-};
-
-const handleFileSend = (event, _this) => {
+const handleFileSend = async (event, _this) => {
 
     let selectedFiles = event.target.files;
-    let fileIndex = 0;
 
-    // #task [] refactor PARENT func and CHILD recursive functions
-    const recursiveUpload = () => {
-        if (fileIndex < selectedFiles.length) {
-            const file = selectedFiles[fileIndex];
-            let formData = new FormData();
-            formData.append('file', file);
+    for (const fileToUpload of selectedFiles) {
 
-            progressEntity.message = 'Загрузка файла';
-            progressEntity.uploading = true;
+        // #task [] refactor - use progressEntity as progressBar custom hook
+        progressEntity.reset();
+        progressEntity.message = 'Загрузка файла';
+        progressEntity.fileName = fileToUpload.name;
+        progressEntity.uploading = true;
 
-            const fileName = file.name;
+        let formData = new FormData();
+        formData.append('file', fileToUpload);
 
-            uploadFile(fileName, formData)
-                .then(response => {
-                    filesStore.pushFileEntity(response.data);
-                    fileIndex++;
-                    recursiveUpload();
-                    // #task [] refactor PARENT func and CHILD recursive functions
-                })
-                .catch(error => {
-                    console.error('Error uploading files:', error);
-                })
-        } else {
-            progressEntity.reset();
-            _this.$refs.fileInput.value = null;
-        }
-    };
-
-    recursiveUpload();
-};
+        // #task [] refactor - axios to external function
+        // #task [] refactor - url to constant
+        // #task [] refactor - headers to constant
+        // #task [] refactor - onUploadProgress to constant
+        await axios.post(`http://localhost:3000/file?filename=${fileToUpload.name}`, formData, {
+            headers: {
+                'auth-token': `Bearer ${authStore.token}`,
+                'Content-Type': 'multipart/form-data'
+            },
+            onUploadProgress: progressEvent => {
+                progressEntity.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
+            }
+        })
+            .then(responce => {
+                filesStore.pushFileEntity(responce.data);
+            })
+            .catch(error => {
+                // #task [] refactor - handle error in progressBar
+                console.error('Error uploading files:', error);
+            })
+            .finally(() => {
+                progressEntity.reset();
+            })
+    }
+}
 
 const fileDelete = (file) => {
 
