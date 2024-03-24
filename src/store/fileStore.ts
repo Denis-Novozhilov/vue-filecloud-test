@@ -20,7 +20,8 @@ export const useFilesStore = defineStore('filesStore', {
 					key = String(key);
 				}
 				return state.selectedFiles.get(key);
-			}
+			},
+		getSelectedFiles: (state) => Array.from(state.selectedFiles.values())
 	},
 	actions: {
 		// actions for files entities

@@ -117,6 +117,10 @@ const getExtensionIcon = (fileName = 'default.file') => {
 
 const toggleItemSelection = (item) => {
 
+    console.log(`toggleItemSelection`)
+    console.log(`item`)
+    console.log(item)
+
     if (item.isChecked) {
         filesStore.removeSelected(item)
         item.isChecked = false;
@@ -165,7 +169,8 @@ const handleMainCheckbox = (event) => {
 
 
 const uploadFile = (fileName, formData) => {
-
+    // #task [] refactor PARENT func and CHILD recursive functions
+    // #task [] refactor ↑ ↓ wit parent function
     progressEntity.reset();
     progressEntity.message = 'Загрузка файла';
     progressEntity.fileName = fileName;
@@ -190,6 +195,7 @@ const handleFileSend = (event, _this) => {
     let selectedFiles = event.target.files;
     let fileIndex = 0;
 
+    // #task [] refactor PARENT func and CHILD recursive functions
     const recursiveUpload = () => {
         if (fileIndex < selectedFiles.length) {
             const file = selectedFiles[fileIndex];
@@ -206,6 +212,7 @@ const handleFileSend = (event, _this) => {
                     filesStore.pushFileEntity(response.data);
                     fileIndex++;
                     recursiveUpload();
+                    // #task [] refactor PARENT func and CHILD recursive functions
                 })
                 .catch(error => {
                     console.error('Error uploading files:', error);
@@ -217,6 +224,71 @@ const handleFileSend = (event, _this) => {
     };
 
     recursiveUpload();
+};
+
+const fileDelete = (file) => {
+
+    // #task [] refactor ↑ ↓ wit parent function
+    progressEntity.reset();
+    progressEntity.message = 'Удаление файла';
+    progressEntity.fileName = file.name;
+    progressEntity.uploading = true;
+
+    // #task [] refactor url to constants
+    // #task [] refactor headers to constants
+    // #task [] refactor eject onUploadProgress to helpers
+    return axios.delete(`http://localhost:3000/file?id=${file.id}`, {
+        headers: {
+            'auth-token': `Bearer ${authStore.token}`,
+        },
+        // onDownloadProgress: progressEvent => {
+        //     progressEntity.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
+        // },
+        onUploadProgress: progressEvent => {
+            progressEntity.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
+        }
+    });
+};
+const handleButchDelete = (event) => {
+
+    // #task [] refactor PARENT func and CHILD recursive functions
+
+    let selectedFiles = Array.from(filesStore.getSelectedFiles);
+    let fileIndex = 0;
+
+
+    const recursiveDelete = () => {
+        if (fileIndex < selectedFiles.length) {
+            const file = selectedFiles[fileIndex];
+
+            // progressEntity.message = 'Удаление файла';
+            // progressEntity.uploading = true;
+
+            const fileName = file.name;
+
+            fileDelete(file)
+                .then(response => {
+                    // filesStore.pushFileEntity(response.data);
+                    filesStore.setFileEntities(response.data)
+                    filesStore.removeSelected(file)
+                    // #task [] ↑↑↑ refactor to deleteElement - filter FileEntity
+                    // #task [] filter FileEntity
+                    // #task [] filter SelectedFiles
+                    fileIndex++;
+                    recursiveDelete();
+                    // #task [] refactor PARENT func and CHILD recursive functions
+                })
+                .catch(error => {
+                    console.error('Error uploading files:', error);
+                })
+        } else {
+            progressEntity.reset();
+            isEveryFileSelected.value = false;
+            isAnyFileSelected.value = false;
+        }
+    };
+
+    recursiveDelete();
 };
 
 
@@ -458,17 +530,18 @@ const handleFileDownload = (item) => {
             ">
 
                 <!-- main controlls ↓ -->
+                <!-- #task [] Refactor ↓ Оставить только 2 кнопки со сменой контента msg -->
                 <div class="mb-[42px]" v-if="!isEveryFileSelected && isAnyFileSelected">
                     <ButtonUI class="h-[45px]" bgType="inverted" textType="bold"
                         msg="Скачать выбранные" />
                     <ButtonUI class="h-[45px]" bgType="inverted" textType="bold"
-                        msg="Удалить выбранные" />
+                        @click="handleButchDelete($event)" msg="Удалить выбранные" />
                 </div>
                 <div class="mb-[42px]" v-if="isEveryFileSelected">
                     <ButtonUI class="h-[45px]" bgType="inverted" textType="bold"
                         msg="Скачать все" />
                     <ButtonUI class="h-[45px]" bgType="inverted" textType="bold"
-                        msg="Удалить все" />
+                        @click="handleButchDelete($event)" msg="Удалить все" />
                 </div>
                 <!-- main controlls ↑ -->
 

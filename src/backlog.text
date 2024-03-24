@@ -25,6 +25,10 @@
 [] add disable style on button login
 [] add warning style on login inputs
 
+[] add empty template if there is no any files EXISTED
+
+[] svg current color - check is dark chrome mode is working properly
+
 [] add get login request
 
 [] ? Возможно при переименовании файла - при нажатии на кнопку ещё и выделять весь текст?
