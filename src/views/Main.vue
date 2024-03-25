@@ -5,6 +5,7 @@ import ButtonUI from '../components/ButtonUI.vue';
 import { formatBytes } from '../helpers/sizeFormatter';
 import { formatTimestamp } from '../helpers/timeFormatter';
 import { authStore, filesStore } from '../store/index';
+import { FileEntity } from '../types/fileEntity';
 
 let isAnyFileSelected = ref<boolean>(false);
 let isEveryFileSelected = ref<boolean>(false);
@@ -35,7 +36,7 @@ let sortKey = ref<FiltersVariants>('name');
 let sortOrder = ref<number>(1);
 
 const sortedFiles = computed(() => {
-    if (filesStore && filesStore.filesEntities.length) {
+    if (filesStore?.filesEntities?.length) {
         return filesStore.filesEntities.slice().sort((a, b) => {
             return a[sortKey.value] > b[sortKey.value] ? sortOrder.value : -sortOrder.value;
         });
@@ -159,12 +160,13 @@ const handleMainCheckbox = (event) => {
     }
 }
 
-const handleFileSend = async (event, _this) => {
+const handleFileSend = async (files: FileList | null) => {
 
-    let selectedFiles = event.target.files;
+    if (!files) {
+        return
+    }
 
-
-    for (const fileToUpload of selectedFiles) {
+    for (const fileToUpload of files) {
 
         // #task [] refactor - use progressEntity as progressBar custom hook
         progressEntity.reset();
@@ -201,101 +203,46 @@ const handleFileSend = async (event, _this) => {
     }
 }
 
-const fileDelete = (file) => {
+const handleFileDelete = async (files: FileEntity[]) => {
 
-    // #task [] refactor ↑ ↓ wit parent function
-    progressEntity.reset();
-    progressEntity.message = 'Удаление файла';
-    progressEntity.fileName = file.name;
-    progressEntity.uploading = true;
+    for (const fileToDelete of files) {
 
-    // #task [] refactor url to constants
-    // #task [] refactor headers to constants
-    // #task [] refactor eject onUploadProgress to helpers
-    return axios.delete(`http://localhost:3000/file?id=${file.id}`, {
-        headers: {
-            'auth-token': `Bearer ${authStore.token}`,
-        },
-        // onDownloadProgress: progressEvent => {
-        //     progressEntity.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
-        // },
-        onUploadProgress: progressEvent => {
-            progressEntity.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
-        }
-    });
-};
-const handleButchDelete = (event) => {
+        // #task [] refactor - use progressEntity as progressBar custom hook
+        progressEntity.reset();
+        progressEntity.message = 'Удаление файла';
+        progressEntity.fileName = fileToDelete.name;
+        progressEntity.uploading = true;
 
-    // #task [] refactor PARENT func and CHILD recursive functions
-
-    let selectedFiles = Array.from(filesStore.getSelectedFiles);
-    let fileIndex = 0;
-
-
-    const recursiveDelete = () => {
-        if (fileIndex < selectedFiles.length) {
-            const file = selectedFiles[fileIndex];
-
-            // progressEntity.message = 'Удаление файла';
-            // progressEntity.uploading = true;
-
-            const fileName = file.name;
-
-            fileDelete(file)
-                .then(response => {
-                    // filesStore.pushFileEntity(response.data);
-                    filesStore.setFileEntities(response.data)
-                    filesStore.removeSelected(file)
-                    // #task [] ↑↑↑ refactor to deleteElement - filter FileEntity
-                    // #task [] filter FileEntity
-                    // #task [] filter SelectedFiles
-                    fileIndex++;
-                    recursiveDelete();
-                    // #task [] refactor PARENT func and CHILD recursive functions
-                })
-                .catch(error => {
-                    console.error('Error uploading files:', error);
-                })
-        } else {
-            progressEntity.reset();
-            isEveryFileSelected.value = false;
-            isAnyFileSelected.value = false;
-        }
-    };
-
-    recursiveDelete();
-};
-
-
-
-const handleFileDelete = (item) => {
-
-    progressEntity.message = 'Удаление файла';
-    progressEntity.fileName = item.name;
-    progressEntity.uploading = true;
-
-    // #task [] refactor url to constants
-    // #task [] refactor headers to constants
-    // #task [] refactor eject onUploadProgress to helpers
-    axios.delete(`http://localhost:3000/file?id=${item.id}`, {
-        headers: {
-            'auth-token': `Bearer ${authStore.token}`,
-        },
-        onDownloadProgress: progressEvent => {
-            progressEntity.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
-        }
-    })
-        .then(response => {
-            filesStore.setFileEntities(response.data)
+        // #task [] refactor - axios to external function
+        // #task [] refactor - url to constant
+        // #task [] refactor - headers to constant
+        // #task [] refactor - onUploadProgress to constant
+        await axios.delete(`http://localhost:3000/file?id=${fileToDelete.id}`, {
+            headers: {
+                'auth-token': `Bearer ${authStore.token}`,
+                'Content-Type': 'multipart/form-data'
+            },
+            onUploadProgress: progressEvent => {
+                progressEntity.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
+            }
         })
-        .catch(error => {
-            console.error('Error uploading file:', error);
-            // [] #task Обработка ошибки
-        })
-        .finally(() => {
-            progressEntity.reset();
-        })
+            .then((responce) => {
+                if (responce.statusText === "OK") {
+                    // $task [] ?? refactor - add Remove Selected in filesStore.deleteFileEntity()
+                    filesStore.deleteFileEntity(fileToDelete);
+                    filesStore.removeSelected(fileToDelete);
+                }
+            })
+            .catch(error => {
+                // #task [] refactor - handle error in progressBar
+                console.error('Error uploading files:', error);
+            })
+            .finally(() => {
+                progressEntity.reset();
+            })
+    }
 }
+
 
 const updateWidth = (event, { id }, _this) => {
 
@@ -422,9 +369,9 @@ const handleFileDownload = (item) => {
                 mt-[24px]
             ">
                 <input class="hidden" type="file" ref="fileInput"
-                    @change="handleFileSend($event, this)" multiple>
+                    @change="handleFileSend(($event.target as HTMLInputElement).files)" multiple>
                 <ButtonUI bgType="common" textType="normal" msg="Добавить"
-                    @click="this.$refs.fileInput.click()" />
+                    @click="(this.$refs.fileInput as HTMLInputElement).click()" />
             </div>
 
             <!-- fail list table -->
@@ -505,26 +452,20 @@ const handleFileDownload = (item) => {
             ">
 
                 <!-- main controlls ↓ -->
-                <!-- #task [] Refactor ↓ Оставить только 2 кнопки со сменой контента msg -->
-                <div class="mb-[42px]" v-if="!isEveryFileSelected && isAnyFileSelected">
+                <div class="mb-[42px]" v-if="isEveryFileSelected || isAnyFileSelected">
+
                     <ButtonUI class="h-[45px]" bgType="inverted" textType="bold"
-                        msg="Скачать выбранные" />
+                        :msg="(isEveryFileSelected ? 'Скачать все' : isAnyFileSelected ? 'Скачать выбранные' : '')" />
                     <ButtonUI class="h-[45px]" bgType="inverted" textType="bold"
-                        @click="handleButchDelete($event)" msg="Удалить выбранные" />
+                        :msg="(isEveryFileSelected ? 'Удалить все' : isAnyFileSelected ? 'Удалить выбранные' : '')"
+                        @click="handleFileDelete(filesStore.getSelectedFiles)" />
                 </div>
-                <div class="mb-[42px]" v-if="isEveryFileSelected">
-                    <ButtonUI class="h-[45px]" bgType="inverted" textType="bold"
-                        msg="Скачать все" />
-                    <ButtonUI class="h-[45px]" bgType="inverted" textType="bold"
-                        @click="handleButchDelete($event)" msg="Удалить все" />
-                </div>
+
                 <!-- main controlls ↑ -->
 
                 <!-- files list row ↓ -->
-                <!-- <li :class="['filesListRow', 'hover:bg-slate-100', item?.isChecked && 'selected']"
-                    v-for="item in filesStore.filesEntities" :key="item?.id"> -->
                 <li :class="['filesListRow', 'hover:bg-slate-100', item?.isChecked && 'selected']"
-                    v-for="item in sortedFiles" :key="item?.id">
+                    v-for=" item  in  sortedFiles " :key="item?.id">
                     <div class="checker">
                         <label :for="`${item?.id}`">
                             <input class="
@@ -568,7 +509,7 @@ const handleFileDownload = (item) => {
                         <p class="
                 info 
                 mt-[5px]
-                ">{{ `.${ejectExtension(item?.name).toLowerCase()}` }}</p>
+                ">{{ `.${ejectExtension(item?.name).toLowerCase()} ` }}</p>
 
                     </div>
                     <div class="fl-col2">
@@ -610,7 +551,7 @@ const handleFileDownload = (item) => {
                     focus:outline-[3px]
                     focus:outline-stone-300
                     focus:outline-offset-[3px]
-                    focus:border-none" @click="handleFileDelete(item)">
+                    focus:border-none" @click="handleFileDelete([item])">
                             <img src="../assets/delete.svg" alt="delete">
                         </button>
                     </div>
