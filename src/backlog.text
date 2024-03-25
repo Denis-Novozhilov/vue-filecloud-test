@@ -20,12 +20,18 @@
 [] add custom colors tailwind
 [] add custom font families tailwind
 
+[] delete redundant imports
+
+[] refactor api calls with interceptions 
+
 [v] #task fix FILTERS arrow rotation direction up/down
 
 [] add disable style on button login
 [] add warning style on login inputs
 
 [] add empty template if there is no any files EXISTED
+
+[] vee-validate for login [email] and password
 
 [] svg current color - check is dark chrome mode is working properly
 
@@ -34,6 +40,10 @@
 [] ? Возможно при переименовании файла - при нажатии на кнопку ещё и выделять весь текст?
 
 [] adaptive
+
+[] watch later comptaible vue3 // Composables 
+
+[] watch later veeUse vue3 // veeUse 
 
 [] FIX template progressBar Bug with "delamination" elements
 

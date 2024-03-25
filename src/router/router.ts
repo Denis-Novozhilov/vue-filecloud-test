@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { useStore } from '../store/index.ts';
+import { authStore } from '../store/index';
 
 const routes = [
 	{
@@ -32,8 +32,6 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-	const { authStore } = useStore();
-
 	if (!authStore.isLogged && to.name !== 'Login') {
 		next({ name: 'Login' });
 	} else if (authStore.isLogged && to.name === 'Login') {

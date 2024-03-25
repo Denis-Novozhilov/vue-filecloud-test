@@ -1,12 +1,10 @@
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref } from 'vue';
 import axios from 'axios';
-import { formatTimestamp } from '../helpers/timeFormatter';
-import { formatBytes } from '../helpers/sizeFormatter';
+import { computed, onMounted, reactive, ref } from 'vue';
 import ButtonUI from '../components/ButtonUI.vue';
-import { useStore } from '../store';
-
-const { authStore, filesStore } = useStore();
+import { formatBytes } from '../helpers/sizeFormatter';
+import { formatTimestamp } from '../helpers/timeFormatter';
+import { authStore, filesStore } from '../store/index';
 
 let isAnyFileSelected = ref<boolean>(false);
 let isEveryFileSelected = ref<boolean>(false);
@@ -23,8 +21,6 @@ const progressEntity = reactive({
         this.uploadProgress = 0;
     }
 })
-
-
 
 // FILTERS
 type FiltersVariants = 'name' | 'createdAt' | 'size';
@@ -87,7 +83,7 @@ onMounted(() => {
 const ejectName = (fileName = 'default.file') => fileName.split(".").slice(0, -1).join('.');
 const ejectExtension = (fileName = 'default.file') => fileName?.split(".").at(-1).toUpperCase();
 
-// [] task remove to helpers and improve with object
+// [] task refactor remove to helpers and improve with object
 const getExtensionIcon = (fileName = 'default.file') => {
 
     const extension = ejectExtension(fileName);
@@ -116,10 +112,6 @@ const getExtensionIcon = (fileName = 'default.file') => {
 }
 
 const toggleItemSelection = (item) => {
-
-    console.log(`toggleItemSelection`)
-    console.log(`item`)
-    console.log(item)
 
     if (item.isChecked) {
         filesStore.removeSelected(item)
@@ -170,6 +162,7 @@ const handleMainCheckbox = (event) => {
 const handleFileSend = async (event, _this) => {
 
     let selectedFiles = event.target.files;
+
 
     for (const fileToUpload of selectedFiles) {
 
