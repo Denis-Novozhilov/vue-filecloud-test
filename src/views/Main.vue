@@ -10,6 +10,9 @@ import { FileEntity } from '../types/fileEntity';
 let isAnyFileSelected = ref<boolean>(false);
 let isEveryFileSelected = ref<boolean>(false);
 
+const mainChecker = ref<HTMLInputElement | null>(null);
+const fileInput = ref<HTMLInputElement | null>(null);
+
 const progressEntity = reactive({
     fileName: '',
     message: '',
@@ -137,7 +140,7 @@ const toggleItemSelection = (item) => {
     }
 }
 
-const handleMainCheckbox = (event) => {
+const handleSelectAll = (event) => {
 
     if (event.target.checked) {
 
@@ -201,6 +204,9 @@ const handleFileSend = async (files: FileList | null) => {
                 progressEntity.reset();
             })
     }
+    if (isEveryFileSelected.value) {
+        mainChecker.value?.click()
+    }
 }
 
 const handleFileDelete = async (files: FileEntity[]) => {
@@ -253,6 +259,7 @@ const updateWidth = (event, { id }, _this) => {
     inputRef[0].style.width = `${value.length * 17.5 + 8}px`;
 }
 
+// #task [] refactor ↓ with ref instead _this.$refs etc...
 const handleFileRename = (event, item, _this, oldName) => {
 
     let value = event.target.value.trim()
@@ -306,53 +313,61 @@ const handleFileRename = (event, item, _this, oldName) => {
 }
 
 
-const handleFileDownload = (item) => {
+const handleFileDownload = async (files: FileEntity[]) => {
 
-    progressEntity.message = 'Скачивание файла';
-    progressEntity.fileName = item.name;
-    progressEntity.uploading = true;
+    for (const fileToDownload of files) {
 
-    // #task [] refactor url to constants
-    // #task [] refactor headers to constants
-    // #task [] refactor eject onUploadProgress to helpers
-    // axios.get(`http://localhost:3000/file?filename=${encodeURIComponent(item.name)}`, {
-    axios.get(`http://localhost:3000/file?filename=${item.name}`, {
-        responseType: 'blob',
-        headers: {
-            'auth-token': `Bearer ${authStore.token}`,
-        },
-        onDownloadProgress: progressEvent => {
-            progressEntity.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
-        },
-        // #task [] ↑↓ on this example work out how to cancel axios responce by user disturbing
-    })
-        .then(response => {
+        // #task [] refactor - use progressEntity as progressBar custom hook
+        progressEntity.reset();
+        progressEntity.message = 'Скачивание файла';
+        progressEntity.fileName = fileToDownload.name;
+        progressEntity.uploading = true;
 
-            const blob = new Blob([response.data], { type: response.headers['content-type'] });
-            const url = URL.createObjectURL(blob);
+        // #task [] refactor - axios to external function
+        // #task [] refactor - url to constant
+        // #task [] refactor - headers to constant
+        // #task [] refactor - onUploadProgress to constant
+        // #task [] refactor eject onUploadProgress to helpers
+        // axios.get(`http://localhost:3000/file?filename=${encodeURIComponent(item.name)}`, {
 
-
-            const tempLink = document.createElement('a');
-            tempLink.href = url;
-            tempLink.download = item.name;
-            document.body.appendChild(tempLink);
-            tempLink.click();
-            document.body.removeChild(tempLink);
-            progressEntity.reset();
-
-            // window.open(url);
+        let blobURL = '';
+        await axios.get(`http://localhost:3000/file?filename=${fileToDownload.name}`, {
+            responseType: 'blob',
+            headers: {
+                'auth-token': `Bearer ${authStore.token}`,
+            },
+            onDownloadProgress: progressEvent => {
+                progressEntity.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
+            },
+            // #task [] ↑↓ on this example work out how to cancel axios responce by user disturbing
         })
-        .catch(error => {
-            // Обработка ошибки
-            console.error('Error downloading file:', error);
-            // #task [] handle errors and clear error html element
-        })
-        .finally(() => {
-            URL.revokeObjectURL(url);
-            progressEntity.reset();
-        })
+            .then(response => {
+
+                const blob = new Blob([response.data], { type: response.headers['content-type'] });
+                blobURL = URL.createObjectURL(blob);
+
+
+                const tempLink = document.createElement('a');
+                tempLink.href = blobURL;
+                tempLink.download = fileToDownload.name;
+                document.body.appendChild(tempLink);
+                tempLink.click();
+                document.body.removeChild(tempLink);
+                progressEntity.reset();
+
+                // window.open(url);
+            })
+            .catch(error => {
+                // Обработка ошибки
+                console.error('Error downloading file:', error);
+                // #task [] handle errors and clear error html element
+            })
+            .finally(() => {
+                URL.revokeObjectURL(blobURL);
+                progressEntity.reset();
+            })
+    }
 }
-
 
 </script>
 
@@ -368,10 +383,12 @@ const handleFileDownload = (item) => {
                 h-[42px] 
                 mt-[24px]
             ">
+                <!-- <input class="hidden" type="file" ref="fileInput"
+                    @change="handleFileSend(($event.target as HTMLInputElement).files)" multiple> -->
                 <input class="hidden" type="file" ref="fileInput"
-                    @change="handleFileSend(($event.target as HTMLInputElement).files)" multiple>
+                    @change="handleFileSend(fileInput.files)" multiple>
                 <ButtonUI bgType="common" textType="normal" msg="Добавить"
-                    @click="(this.$refs.fileInput as HTMLInputElement).click()" />
+                    @click="fileInput?.click()" />
             </div>
 
             <!-- fail list table -->
@@ -389,7 +406,7 @@ const handleFileDownload = (item) => {
                     peer/inputx 
                     appearance-none
                     " type="checkbox" :name="'all'" :id="'all'" :checked="isEveryFileSelected"
-                                @change="handleMainCheckbox($event)">
+                                @change="handleSelectAll($event)" ref="mainChecker">
                             <div class="
                             w-[33px]
                             h-[33px]
@@ -455,7 +472,8 @@ const handleFileDownload = (item) => {
                 <div class="mb-[42px]" v-if="isEveryFileSelected || isAnyFileSelected">
 
                     <ButtonUI class="h-[45px]" bgType="inverted" textType="bold"
-                        :msg="(isEveryFileSelected ? 'Скачать все' : isAnyFileSelected ? 'Скачать выбранные' : '')" />
+                        :msg="(isEveryFileSelected ? 'Скачать все' : isAnyFileSelected ? 'Скачать выбранные' : '')"
+                        @click="handleFileDownload(filesStore.getSelectedFiles)" />
                     <ButtonUI class="h-[45px]" bgType="inverted" textType="bold"
                         :msg="(isEveryFileSelected ? 'Удалить все' : isAnyFileSelected ? 'Удалить выбранные' : '')"
                         @click="handleFileDelete(filesStore.getSelectedFiles)" />
@@ -542,7 +560,7 @@ const handleFileDownload = (item) => {
                     focus:outline-stone-300
                     focus:outline-offset-[3px]
                     focus:border-none
-                    " @click="handleFileDownload(item)">
+                    " @click="handleFileDownload([item])">
                             <img src="../assets/download.svg" alt="download">
                         </button>
                         <button class="

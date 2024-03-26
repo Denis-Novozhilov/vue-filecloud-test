@@ -1,6 +1,14 @@
 [v] Refactoring Оставить только 2 Main Checker кнопки со сменой контента msg 
 [v] создать логированные переходы в навигации
 
+[] refactor this.$refs ... with someRefElem.value?.click() or another ↓↓↓
+[] →→→ refactor _this arguments to use someRefElem.value?. elements
+
+[] turn to webstorm
+[] apply vite configs and plugins
+
+[] refactor API calls with interceptors
+
 [] исправить глобальные стили
 [] вернуть alias @
 [] проверить сборку проекта 
@@ -21,6 +29,8 @@
 
 [] add custom colors tailwind
 [] add custom font families tailwind
+
+[] skip main Checker after adding files
 
 [] delete redundant imports
 
