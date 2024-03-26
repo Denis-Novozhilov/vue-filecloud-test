@@ -1,56 +1,61 @@
 ===-priority-1-↓===
-[] transfer project to WebStorm 
-[] configure svg plugins and linters 
-[] configure git repo settings 
-[] Make some minor changes , commit and push
+[v] transfer project to WebStorm
+[v] configure git repo settings
+[v] Make some minor changes , commit and push
 
-[] back log watch fast - eject to priority
+[] backlog watch fast - eject to priority
 [] separate API calls, ComponentsUI, helpers
 [] clear tw styles in every single file
 [] delete unnecessary elements and files
 [] clear all comments
 ===-priority-1-↑===
 
-[v] Refactoring Оставить только 2 Main Checker кнопки со сменой контента msg 
+===-priority-2-↓===
+[] configure svg plugins and linters
+===-priority-2-↑===
+
+===-done-↓===
+[v] Refactoring Оставить только 2 Main Checker кнопки со сменой контента msg
 [v] создать логированные переходы в навигации
+[v] to Navbar add optional style isLogged or notLogged conditions
+[v] skip main Checker after adding files
+[v] #task fix FILTERS arrow rotation direction up/down
+===-done-↑===
 
 [] refactor this.$refs ... with someRefElem.value?.click() or another ↓↓↓
 [] →→→ refactor _this arguments to use someRefElem.value?. elements
 
-[] turn to webstorm
 [] apply vite configs and plugins
-
 [] refactor API calls with interceptors
 
 [] исправить глобальные стили
 [] вернуть alias @
-[] проверить сборку проекта 
+[] проверить сборку проекта
     npx tailwindcss -i ./src/input.css -o ./src/output.css --watch
     https://v2.tailwindcss.com/docs/guides/vue-3-vite
     https://v2.tailwindcss.com/docs/optimizing-for-production
 [] add darck mode
     https://tailwindcss.com/docs/upgrade-guide#remove-dark-mode-configuration
-[] to Navbar add optional style isLogged or notLogged conditions
-[] add custon colors to tailwind settings
+[] add custom colors to tailwind settings
 [] add needed fonts in tailwind settings
-[] add .container element to App and fix sizes
+[] add .container element to App and custom - fix sizes
 [] add font in tailwind
 [] add headwind 
 [] delete redundant elements , components , vues
 [] improve hr lines on every page
-[] watch about validation in forms (info in notion)
+[] improve hr lines on every file row
+[] watch about validation in forms (info in notion) veeValidate
 
 [] add custom colors tailwind
 [] add custom font families tailwind
 
-[] skip main Checker after adding files
 
 [] delete redundant imports
 
-[] refactor api calls with interceptions 
+[] refactor api calls with interceptions
 
-[v] #task fix FILTERS arrow rotation direction up/down
 
+[] fix fill current color to svg icons over project
 [] add disable style on button login
 [] add warning style on login inputs
 
@@ -162,8 +167,6 @@
 
 ? [] HOW validate file sizes (how many Mb)??
  - 10Mb
-
-
 
 [] try to add cancel
 Добавление функционала отмены процесса загрузки или удаления файла до его завершения может быть достигнуто путем добавления кнопки "Отмена" и соответствующей логики обработчика события клика на эту кнопку. Давайте добавим кнопку "Отмена" и логику для неё.
