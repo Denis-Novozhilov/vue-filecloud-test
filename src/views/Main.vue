@@ -2,10 +2,10 @@
 import axios from 'axios';
 import {computed, onMounted, reactive, ref} from 'vue';
 import ButtonUI from '../components/ButtonUI.vue';
-import {formatBytes} from '../helpers/sizeFormatter';
-import {formatTimestamp} from '../helpers/timeFormatter';
 import {authStore, filesStore} from '../store/index';
 import {FileEntity} from '../types/fileEntity';
+import {formatTimestamp} from '../helpers/formatTimestamp.ts'
+import {formatBytes} from '../helpers/formatBytes.ts'
 
 let isAnyFileSelected = ref<boolean>(false);
 let isEveryFileSelected = ref<boolean>(false);
@@ -47,6 +47,27 @@ const sortedFiles = computed(() => {
         return []
     }
 });
+const checkedDownloadMessage = computed( ()=>{
+      if (isEveryFileSelected.value) {
+        return 'Скачать все'
+      } else if (isAnyFileSelected.value) {
+        return 'Скачать выбранные'
+      } else {
+        return ''
+      }
+  }
+);
+const checkedDeleteMessage = computed(()=> {
+  if (isEveryFileSelected.value) {
+    return 'Удалить все'
+  } else if (isAnyFileSelected.value) {
+    return 'Удалить выбранные'
+  } else {
+    return ''
+  }
+})
+
+const isSelections = computed(()=>isEveryFileSelected.value || isAnyFileSelected.value)
 
 const sortBy = (key: FiltersVariants) => {
     // inverse current filter ↓
@@ -469,13 +490,19 @@ const handleFileDownload = async (files: FileEntity[]) => {
             ">
 
                 <!-- main controlls ↓ -->
-                <div class="mb-[42px]" v-if="isEveryFileSelected || isAnyFileSelected">
+                <div class="mb-[42px]" v-if="isSelections">
 
-                    <ButtonUI class="h-[45px]" bgType="inverted" textType="bold"
-                        :msg="(isEveryFileSelected ? 'Скачать все' : isAnyFileSelected ? 'Скачать выбранные' : '')"
+                    <ButtonUI
+                        class="h-[45px]"
+                        bgType="inverted"
+                        textType="bold"
+                        :msg="checkedDownloadMessage"
                         @click="handleFileDownload(filesStore.getSelectedFiles)" />
-                    <ButtonUI class="h-[45px]" bgType="inverted" textType="bold"
-                        :msg="(isEveryFileSelected ? 'Удалить все' : isAnyFileSelected ? 'Удалить выбранные' : '')"
+                    <ButtonUI
+                        class="h-[45px]"
+                        bgType="inverted"
+                        textType="bold"
+                        :msg="checkedDeleteMessage"
                         @click="handleFileDelete(filesStore.getSelectedFiles)" />
                 </div>
 
@@ -531,7 +558,7 @@ const handleFileDownload = async (files: FileEntity[]) => {
 
                     </div>
                     <div class="fl-col2">
-                        <p class="info">{{ formatTimestamp(item?.createdAt) }}</p>
+                        <p class="info">{{ formatTimestamp (item?.createdAt) }}</p>
                     </div>
                     <div class="fl-col3">
                         <p class="info">{{ formatBytes(item?.size) }}</p>
