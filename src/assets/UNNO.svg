@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<svg width="38" height="40" viewBox="0 0 38 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="1" y="1" width="36" height="38" rx="4" stroke="#0066FF" stroke-width="2"/>
-  <rect x="6.838" y="6.605" width="17.99" height="21.373" style="fill: rgb(255, 255, 255); stroke-linejoin: round; stroke: rgb(0, 102, 255); stroke-linecap: square; vector-effect: non-scaling-stroke; stroke-width: 17px;"/>
-  <rect x="13.53" y="11.422" width="17.99" height="21.373" style="stroke-miterlimit: 18.67; stroke-linecap: square; stroke-linejoin: round; stroke: rgb(0, 102, 255); fill: rgb(255, 255, 255); vector-effect: non-scaling-stroke; stroke-width: 17px;"/>
-  <path style="fill: rgb(216, 216, 216); stroke: rgb(0, 102, 255);" d="M 16.986 16.066 L 27.883 16.066"/>
-  <path style="fill: rgb(216, 216, 216); stroke: rgb(0, 102, 255);" d="M 16.996 26.037 L 27.893 26.037"/>
-  <path style="fill: rgb(216, 216, 216); stroke: rgb(0, 102, 255);" d="M 16.988 21.041 L 27.885 21.041"/>
-</svg>

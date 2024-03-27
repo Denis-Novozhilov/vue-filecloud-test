@@ -9,6 +9,7 @@ import {fileDownload} from "../api/fileDownload.ts";
 import {fileDelete} from "../api/fileDelete.ts";
 import {formatTimestamp} from "../helpers/formatTimestamp.ts";
 import {formatBytes} from "../helpers/formatBytes.ts";
+import {ejectExtension, getExtensionIconURL} from "../helpers/getExtension.ts";
 
 let isAnyFileSelected = ref<boolean>(false);
 let isEveryFileSelected = ref<boolean>(false);
@@ -41,7 +42,7 @@ const sortedFiles = computed(() => {
 });
 
 const sortBy = (key: FiltersVariants) => {
-    // inverse current filter ↓
+    // if the same key → inverse current filter ↓
     if (sortKey.value === key) {
         sortOrder.value *= -1;
         if (sortOrder.value < 0) {
@@ -49,7 +50,7 @@ const sortBy = (key: FiltersVariants) => {
         } else {
             filersOrders[key] = 'Asc'
         }
-        // apply new filter ↓
+    // if another key → apply new filter ↓
     } else {
         sortKey.value = key;
         sortOrder.value = 1;
@@ -80,35 +81,6 @@ onMounted(() => {
 })
 
 const ejectName = (fileName = 'default.file') => fileName.split(".").slice(0, -1).join('.');
-const ejectExtension = (fileName = 'default.file') => fileName?.split(".").at(-1).toUpperCase();
-
-// [] task refactor remove to helpers and improve with object
-const getExtensionIcon = (fileName = 'default.file') => {
-
-    const extension = ejectExtension(fileName);
-
-    let res;
-
-    switch (extension) {
-        case 'DOCX':
-            res = 'DOCX'
-            break;
-        case 'MP4':
-            res = 'MP4'
-            break;
-        case 'PNG':
-            res = 'PNG'
-            break;
-        case 'XLS':
-            res = 'XLS'
-            break;
-        default:
-            res = 'UNNO-EDT-2'
-
-    }
-
-    return `./src/assets/${res}.svg`
-}
 
 const toggleItemSelection = (item) => {
 
@@ -427,7 +399,7 @@ const handleFileRename = (event, item, _this, oldName) => {
                         </label>
                     </div>
                     <div class="fl-col1 fileName">
-                        <img :src="getExtensionIcon(item?.name)" />
+                        <img :src="getExtensionIconURL(item?.name)" />
 
                         <!-- #task [] refactor - delete placeholder attribute? -->
                         <input type="text" :ref="`fileName${item.id}`"

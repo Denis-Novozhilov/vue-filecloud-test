@@ -10,6 +10,7 @@
 [] clear all comments
 
 [] add overfilling css styles to progressBar
+[] refactor all warnings
 ===-priority-1-↑===
 
 ===-priority-2-↓===
@@ -21,6 +22,7 @@
 
 [] watch work or not <button-ui> in template
 
+[v] refactor extension helpers and improve with object
 [v] refactor fileDownload fn - eject to api or to helpers dist
 [v] refactor fileDelete fn - eject to api or to helpers dist
 [v] watchers in pinia store - how it works <button-uii>
