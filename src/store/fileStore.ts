@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia';
-import { FileEntity } from '../types/fileEntity';
+import {defineStore} from 'pinia';
+import {FileEntity} from '../types/fileEntity';
 
 export const useFilesStore = defineStore('filesStore', {
 	state: () => ({

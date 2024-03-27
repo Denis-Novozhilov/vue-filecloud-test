@@ -1,11 +1,14 @@
 <script lang="ts" setup>
 import axios from 'axios';
-import {computed, onMounted, reactive, ref} from 'vue';
-import ButtonUI from '../components/ButtonUI.vue';
-import {authStore, filesStore} from '../store/index';
-import {FileEntity} from '../types/fileEntity';
-import {formatTimestamp} from '../helpers/formatTimestamp.ts'
-import {formatBytes} from '../helpers/formatBytes.ts'
+import {computed, onMounted, ref} from 'vue';
+import {authStore, filesStore, notificationStore} from '../store/index';
+import {BASE_URL} from '../api/index.ts'
+import TableHeaderControls from "../components/TableHeaderControls.vue";
+import ButtonUI from "../components/ButtonUI.vue";
+import {fileDownload} from "../api/fileDownload.ts";
+import {fileDelete} from "../api/fileDelete.ts";
+import {formatTimestamp} from "../helpers/formatTimestamp.ts";
+import {formatBytes} from "../helpers/formatBytes.ts";
 
 let isAnyFileSelected = ref<boolean>(false);
 let isEveryFileSelected = ref<boolean>(false);
@@ -13,18 +16,7 @@ let isEveryFileSelected = ref<boolean>(false);
 const mainChecker = ref<HTMLInputElement | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
 
-const progressEntity = reactive({
-    fileName: '',
-    message: '',
-    uploading: false,
-    uploadProgress: 0,
-    reset() {
-        this.fileName = '';
-        this.message = '';
-        this.uploading = false;
-        this.uploadProgress = 0;
-    }
-})
+const {progressEntity} = notificationStore;
 
 // FILTERS
 type FiltersVariants = 'name' | 'createdAt' | 'size';
@@ -47,20 +39,6 @@ const sortedFiles = computed(() => {
         return []
     }
 });
-const getSelectedMessage = (forEvery: string, forSome: string): string => {
-  if (isEveryFileSelected.value) {
-    return forEvery;
-  } else if (isAnyFileSelected.value) {
-    return forSome;
-  } else {
-    return '';
-  }
-}
-
-const checkedDownloadMessage = computed(() => getSelectedMessage('Скачать все', 'Скачать выбранные'));
-const checkedDeleteMessage = computed(() => getSelectedMessage('Удалить все', 'Удалить выбранные'));
-
-const isSelections = computed(() => isEveryFileSelected.value || isAnyFileSelected.value)
 
 const sortBy = (key: FiltersVariants) => {
     // inverse current filter ↓
@@ -78,12 +56,15 @@ const sortBy = (key: FiltersVariants) => {
         filersOrders[key] = 'Asc'
     }
 };
+/// FILTERS ↑
 
+const checkSelections = computed(() => isEveryFileSelected.value || isAnyFileSelected.value);
 
 onMounted(() => {
     // #task [] add to constants
     // #task [] add header to constants
-    axios.get('http://localhost:3000/list', {
+
+    axios.get(`${BASE_URL}/list`, {
         headers: {
             'auth-token': `Bearer ${authStore.token}`
         }
@@ -198,7 +179,7 @@ const handleFileSend = async (files: FileList | null) => {
         // #task [] refactor - url to constant
         // #task [] refactor - headers to constant
         // #task [] refactor - onUploadProgress to constant
-        await axios.post(`http://localhost:3000/file?filename=${fileToUpload.name}`, formData, {
+        await axios.post(`${BASE_URL}/file?filename=${fileToUpload.name}`, formData, {
             headers: {
                 'auth-token': `Bearer ${authStore.token}`,
                 'Content-Type': 'multipart/form-data'
@@ -222,47 +203,6 @@ const handleFileSend = async (files: FileList | null) => {
         mainChecker.value?.click()
     }
 }
-
-const handleFileDelete = async (files: FileEntity[]) => {
-
-    for (const fileToDelete of files) {
-
-        // #task [] refactor - use progressEntity as progressBar custom hook
-        progressEntity.reset();
-        progressEntity.message = 'Удаление файла';
-        progressEntity.fileName = fileToDelete.name;
-        progressEntity.uploading = true;
-
-        // #task [] refactor - axios to external function
-        // #task [] refactor - url to constant
-        // #task [] refactor - headers to constant
-        // #task [] refactor - onUploadProgress to constant
-        await axios.delete(`http://localhost:3000/file?id=${fileToDelete.id}`, {
-            headers: {
-                'auth-token': `Bearer ${authStore.token}`,
-                'Content-Type': 'multipart/form-data'
-            },
-            onUploadProgress: progressEvent => {
-                progressEntity.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
-            }
-        })
-            .then((responce) => {
-                if (responce.statusText === "OK") {
-                    // $task [] ?? refactor - add Remove Selected in filesStore.deleteFileEntity()
-                    filesStore.deleteFileEntity(fileToDelete);
-                    filesStore.removeSelected(fileToDelete);
-                }
-            })
-            .catch(error => {
-                // #task [] refactor - handle error in progressBar
-                console.error('Error uploading files:', error);
-            })
-            .finally(() => {
-                progressEntity.reset();
-            })
-    }
-}
-
 
 const updateWidth = (event, { id }, _this) => {
 
@@ -301,7 +241,7 @@ const handleFileRename = (event, item, _this, oldName) => {
     // #task [] refactor url to constants
     // #task [] refactor headers to constants
     // #task [] refactor eject onUploadProgress to helpers
-    axios.put(`http://localhost:3000/file?filename=${item.name}`, {
+    axios.put(`${BASE_URL}/file?filename=${item.name}`, {
         name: `${value}.${ejectExtension(item?.name).toLowerCase()}`
     }, {
         headers: {
@@ -326,63 +266,6 @@ const handleFileRename = (event, item, _this, oldName) => {
         })
 }
 
-
-const handleFileDownload = async (files: FileEntity[]) => {
-
-    for (const fileToDownload of files) {
-
-        // #task [] refactor - use progressEntity as progressBar custom hook
-        progressEntity.reset();
-        progressEntity.message = 'Скачивание файла';
-        progressEntity.fileName = fileToDownload.name;
-        progressEntity.uploading = true;
-
-        // #task [] refactor - axios to external function
-        // #task [] refactor - url to constant
-        // #task [] refactor - headers to constant
-        // #task [] refactor - onUploadProgress to constant
-        // #task [] refactor eject onUploadProgress to helpers
-        // axios.get(`http://localhost:3000/file?filename=${encodeURIComponent(item.name)}`, {
-
-        let blobURL = '';
-        await axios.get(`http://localhost:3000/file?filename=${fileToDownload.name}`, {
-            responseType: 'blob',
-            headers: {
-                'auth-token': `Bearer ${authStore.token}`,
-            },
-            onDownloadProgress: progressEvent => {
-                progressEntity.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
-            },
-            // #task [] ↑↓ on this example work out how to cancel axios responce by user disturbing
-        })
-            .then(response => {
-
-                const blob = new Blob([response.data], { type: response.headers['content-type'] });
-                blobURL = URL.createObjectURL(blob);
-
-
-                const tempLink = document.createElement('a');
-                tempLink.href = blobURL;
-                tempLink.download = fileToDownload.name;
-                document.body.appendChild(tempLink);
-                tempLink.click();
-                document.body.removeChild(tempLink);
-                progressEntity.reset();
-
-                // window.open(url);
-            })
-            .catch(error => {
-                // Обработка ошибки
-                console.error('Error downloading file:', error);
-                // #task [] handle errors and clear error html element
-            })
-            .finally(() => {
-                URL.revokeObjectURL(blobURL);
-                progressEntity.reset();
-            })
-    }
-}
-
 </script>
 
 <template>
@@ -397,19 +280,29 @@ const handleFileDownload = async (files: FileEntity[]) => {
                 h-[42px] 
                 mt-[24px]
             ">
-                <!-- <input class="hidden" type="file" ref="fileInput"
-                    @change="handleFileSend(($event.target as HTMLInputElement).files)" multiple> -->
-                <input class="hidden" type="file" ref="fileInput"
-                    @change="handleFileSend(fileInput.files)" multiple>
-                <ButtonUI bgType="common" textType="normal" msg="Добавить"
-                    @click="fileInput?.click()" />
+                <input
+                    class="hidden"
+                    type="file"
+                    ref="fileInput"
+                    @change="handleFileSend(fileInput?.files)"
+                    multiple
+                >
+
+                <button-u-i
+                    bgType="common"
+                    textType="normal"
+                    msg="Добавить"
+                    @click="fileInput?.click()"
+                />
+
             </div>
 
             <!-- fail list table -->
             <ul class="
-            mt-[50px]
-            filesList
-        ">
+                mt-[50px]
+                filesList
+            ">
+
                 <!-- filters ↓ -->
                 <li class="relative">
 
@@ -441,10 +334,16 @@ const handleFileDownload = async (files: FileEntity[]) => {
                     <!-- mail checker ↑ -->
 
 
-                    <button class="
-                fl-col1 
-                text-left
-                filterBtn cursor-pointer" @click="sortBy('name')">
+<!--    #task [] eject to separate Components              -->
+                    <button
+                        class="
+                          fl-col1
+                          text-left
+                          filterBtn
+                          cursor-pointer"
+                        @click="sortBy('name')"
+                    >
+
                         <div class="flex">
                             <p>Название</p>
                             <img :class="['block', 'mx-5', (filersOrders['name'] === 'Desc') && 'rotate-180']"
@@ -452,26 +351,38 @@ const handleFileDownload = async (files: FileEntity[]) => {
                         </div>
                     </button>
 
-                    <button class="
-                fl-col2 
-                filterBtn cursor-pointer" @click="sortBy('createdAt')">
-                        <div class="flex justify-center">
-                            <p>Дата изменения</p>
-                            <img src="../assets/arrow.svg"
-                                :class="['block', 'mx-5', (filersOrders['createdAt'] === 'Desc') && 'rotate-180']"
-                                alt="arrow">
-                        </div>
+                    <button
+                        class="
+                          fl-col2
+                          filterBtn
+                          cursor-pointer"
+                        @click="sortBy('createdAt')"
+                    >
+
+                      <div class="flex justify-center">
+                          <p>Дата изменения</p>
+                          <img src="../assets/arrow.svg"
+                              :class="['block', 'mx-5', (filersOrders['createdAt'] === 'Desc') && 'rotate-180']"
+                              alt="arrow">
+                      </div>
+
                     </button>
 
-                    <button class="
-                fl-col3 
-                filterBtn cursor-pointer" @click="sortBy('size')">
+                    <button
+                        class="
+                          fl-col3
+                          filterBtn
+                          cursor-pointer"
+                        @click="sortBy('size')"
+                    >
+
                         <div class="flex justify-center">
                             <p>Размер</p>
                             <img src="../assets/arrow.svg"
                                 :class="['block', 'mx-5', (filersOrders['size'] === 'Desc') && 'rotate-180']"
                                 alt="arrow">
                         </div>
+
                     </button>
 
                 </li>
@@ -482,18 +393,11 @@ const handleFileDownload = async (files: FileEntity[]) => {
                 border-b-[2px]
             ">
 
-                <!-- main controlls ↓ -->
-                <div class="mb-[42px]" v-if="isSelections">
-
-                    <ButtonUI class="h-[45px]" bgType="inverted" textType="bold"
-                        :msg="checkedDownloadMessage"
-                        @click="handleFileDownload(filesStore.getSelectedFiles)" />
-                    <ButtonUI class="h-[45px]" bgType="inverted" textType="bold"
-                        :msg="checkedDeleteMessage"
-                        @click="handleFileDelete(filesStore.getSelectedFiles)" />
-                </div>
-
-                <!-- main controlls ↑ -->
+                <table-header-controls
+                  :isSelections="checkSelections"
+                  :isAny="isAnyFileSelected"
+                  :isEvery="isEveryFileSelected"
+                ></table-header-controls>
 
                 <!-- files list row ↓ -->
                 <li :class="['filesListRow', 'hover:bg-slate-100', item?.isChecked && 'selected']"
@@ -550,40 +454,47 @@ const handleFileDownload = async (files: FileEntity[]) => {
                     <div class="fl-col3">
                         <p class="info">{{ formatBytes(item?.size) }}</p>
                     </div>
-                    <div class="
-                fl-col4
-                flex
-    
-                gap-[30px]
-            ">
-                        <button class="
-                    rounded-[2px]    
-                    focus:outline
-                    focus:outline-[3px]
-                    focus:outline-stone-300
-                    focus:outline-offset-[3px]
-                    focus:border-none
-                    " @click="this.$refs[`fileName${item.id}`][0].focus()">
+                    <div
+                        class="
+                        fl-col4
+                        flex
+                        gap-[30px]"
+                    >
+                        <button
+                            class="
+                            rounded-[2px]
+                            focus:outline
+                            focus:outline-[3px]
+                            focus:outline-stone-300
+                            focus:outline-offset-[3px]
+                            focus:border-none"
+                            @click="this.$refs[`fileName${item.id}`][0].focus()"
+                        >
                             <!-- #task [] refactor ↑ -->
                             <img src="../assets/edit.svg" alt="edit">
                         </button>
-                        <button class="
-                    rounded-[2px]    
-                    focus:outline
-                    focus:outline-[3px]
-                    focus:outline-stone-300
-                    focus:outline-offset-[3px]
-                    focus:border-none
-                    " @click="handleFileDownload([item])">
+                        <button
+                            class="
+                            rounded-[2px]
+                            focus:outline
+                            focus:outline-[3px]
+                            focus:outline-stone-300
+                            focus:outline-offset-[3px]
+                            focus:border-none"
+                            @click="fileDownload([item])"
+                        >
                             <img src="../assets/download.svg" alt="download">
                         </button>
-                        <button class="
-                    rounded-[2px]    
-                    focus:outline
-                    focus:outline-[3px]
-                    focus:outline-stone-300
-                    focus:outline-offset-[3px]
-                    focus:border-none" @click="handleFileDelete([item])">
+                        <button
+                            class="
+                            rounded-[2px]
+                            focus:outline
+                            focus:outline-[3px]
+                            focus:outline-stone-300
+                            focus:outline-offset-[3px]
+                            focus:border-none"
+                            @click="fileDelete([item])"
+                        >
                             <img src="../assets/delete.svg" alt="delete">
                         </button>
                     </div>

@@ -14,6 +14,16 @@
 
 ===-priority-2-↓===
 [] configure svg plugins and linters
+[] watch how to use slots
+[] watch how to use named slots
+
+[] watch how to use emits
+
+[] watch work or not <button-ui> in template
+
+[v] refactor fileDownload fn - eject to api or to helpers dist
+[v] refactor fileDelete fn - eject to api or to helpers dist
+[v] watchers in pinia store - how it works <button-uii>
 ===-priority-2-↑===
 
 ===-done-↓===

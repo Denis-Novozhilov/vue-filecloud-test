@@ -1,11 +1,12 @@
-export const formatTimestamp = (timestamp) => {
+type DateValue = number|string;
+export const formatTimestamp = (timestamp: number) => {
 	let date = new Date(timestamp);
 
-	let day = date.getDate();
-	let month = date.getMonth() + 1;
-	let year = date.getFullYear();
-	let hours = date.getHours();
-	let minutes = date.getMinutes();
+	let day:DateValue = date.getDate();
+	let month:DateValue = date.getMonth() + 1;
+	let year:DateValue = date.getFullYear();
+	let hours:DateValue = date.getHours();
+	let minutes:DateValue = date.getMinutes();
 
 	if (day < 10) {
 		day = '0' + day;
