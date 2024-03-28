@@ -293,8 +293,8 @@ const handleFileRename = (event, item, _this, oldName) => {
                             bg-no-repeat
                             rounded-[6px]
                             cursor-pointer
-                            bg-[url('./assets/checkbox-unchecked.svg')]
-                            peer-checked/inputx:bg-[url('./assets/checkbox-checked.svg')]
+                            bg-[url('./assets/icons/checkbox-ui-unchecked.svg')]
+                            peer-checked/inputx:bg-[url('./assets/icons/checkbox-ui-checked.svg')]
                             peer-focus/inputx:outline
                             peer-focus/inputx:outline-[5px]
                             peer-focus/inputx:outline-offset-[-5px]
@@ -318,8 +318,14 @@ const handleFileRename = (event, item, _this, oldName) => {
 
                         <div class="flex">
                             <p>Название</p>
-                            <img :class="['block', 'mx-5', (filersOrders['name'] === 'Desc') && 'rotate-180']"
-                                src="../assets/arrow.svg" alt="arrow">
+                            <e-icon
+                                icon="arrow-ui"
+                                :class="[
+                                'ml-1',
+                                'fill-current',
+                                'hover:fill-red-700',
+                                (filersOrders['name'] === 'Desc') && 'rotate-180']"
+                            ></e-icon>
                         </div>
                     </button>
 
@@ -333,9 +339,14 @@ const handleFileRename = (event, item, _this, oldName) => {
 
                       <div class="flex justify-center">
                           <p>Дата изменения</p>
-                          <img src="../assets/arrow.svg"
-                              :class="['block', 'mx-5', (filersOrders['createdAt'] === 'Desc') && 'rotate-180']"
-                              alt="arrow">
+                          <e-icon
+                              icon="arrow-ui"
+                              :class="[
+                                  'ml-1',
+                                  'fill-current',
+                                  'hover:fill-red-700',
+                                  (filersOrders['createdAt'] === 'Desc') && 'rotate-180']"
+                          ></e-icon>
                       </div>
 
                     </button>
@@ -347,14 +358,17 @@ const handleFileRename = (event, item, _this, oldName) => {
                           cursor-pointer"
                         @click="sortBy('size')"
                     >
-
                         <div class="flex justify-center">
                             <p>Размер</p>
-                            <img src="../assets/arrow.svg"
-                                :class="['block', 'mx-5', (filersOrders['size'] === 'Desc') && 'rotate-180']"
-                                alt="arrow">
+                            <e-icon
+                                icon="arrow-ui"
+                                :class="[
+                                    'ml-1',
+                                    'fill-current',
+                                    'hover:fill-red-700',
+                                    (filersOrders['size'] === 'Desc') && 'rotate-180']"
+                            ></e-icon>
                         </div>
-
                     </button>
 
                 </li>
@@ -394,8 +408,8 @@ const handleFileRename = (event, item, _this, oldName) => {
                                   bg-no-repeat
                                   rounded-[6px]
                                   cursor-pointer
-                                  bg-[url('./assets/checkbox-unchecked.svg')]
-                                  peer-checked/inputx:bg-[url('./assets/checkbox-checked.svg')]
+                                  bg-[url('./assets/icons/checkbox-ui-unchecked.svg')]
+                                  peer-checked/inputx:bg-[url('./assets/icons/checkbox-ui-checked.svg')]
                                   peer-focus/inputx:outline
                                   peer-focus/inputx:outline-[5px]
                                   peer-focus/inputx:outline-offset-[-5px]
@@ -408,22 +422,26 @@ const handleFileRename = (event, item, _this, oldName) => {
                         <img :src="getExtensionIconURL(item?.name)" />
 
                         <!-- #task [] refactor - delete placeholder attribute? -->
-                        <input type="text" :ref="`fileName${item.id}`"
-                            :placeholder="ejectName(item?.name)" :value="ejectName(item?.name)"
-                            :style="`width: ${ejectName(item?.name).length * 17.5 + 8}px`" class="
-                        text-[30px]
-                        font-mono
-                        ml-[23px]
-                        rounded-md
-                        px-[5px]
-                        text-ellipsis
-                        cursor-text
-                    " @input="updateWidth($event, item, this)"
+                        <input
+                            type="text"
+                            :ref="`fileName${item.id}`"
+                            :placeholder="ejectName(item?.name)"
+                            :value="ejectName(item?.name)"
+                            :style="`width: ${ejectName(item?.name).length * 17.5 + 8}px`"
+                            class="
+                              text-[30px]
+                              font-mono
+                              ml-[23px]
+                              rounded-md
+                              px-[5px]
+                              text-ellipsis
+                              cursor-text"
+                            @input="updateWidth($event, item, this)"
                             @change="handleFileRename($event, item, this, ejectName(item?.name))" />
                         <p class="
-                info 
-                mt-[5px]
-                ">{{ `.${ejectExtension(item?.name).toLowerCase()} ` }}</p>
+                            info
+                            mt-[5px]
+                        ">{{ `.${ejectExtension(item?.name).toLowerCase()} ` }}</p>
 
                     </div>
                     <div class="fl-col2">
@@ -440,6 +458,8 @@ const handleFileRename = (event, item, _this, oldName) => {
                     >
                         <button
                             class="
+                            flex
+                            justify-center
                             rounded-[2px]
                             focus:outline
                             focus:outline-[3px]
@@ -449,10 +469,17 @@ const handleFileRename = (event, item, _this, oldName) => {
                             @click="this.$refs[`fileName${item.id}`][0].focus()"
                         >
                             <!-- #task [] refactor ↑ -->
-                            <img src="../assets/edit.svg" alt="edit">
+
+                          <e-icon
+                              class="self-center"
+                              icon="edit-ui"
+                          ></e-icon>
                         </button>
+
                         <button
                             class="
+                            flex
+                            justify-center
                             rounded-[2px]
                             focus:outline
                             focus:outline-[3px]
@@ -461,10 +488,16 @@ const handleFileRename = (event, item, _this, oldName) => {
                             focus:border-none"
                             @click="fileDownload([item])"
                         >
-                            <img src="../assets/download.svg" alt="download">
+                          <e-icon
+                              class="self-center"
+                              icon="download-ui"
+                          ></e-icon>
                         </button>
+
                         <button
                             class="
+                            flex
+                            justify-center
                             rounded-[2px]
                             focus:outline
                             focus:outline-[3px]
@@ -473,7 +506,10 @@ const handleFileRename = (event, item, _this, oldName) => {
                             focus:border-none"
                             @click="fileDelete([item])"
                         >
-                            <img src="../assets/delete.svg" alt="delete">
+                          <e-icon
+                              class="self-center"
+                              icon="delete-ui"
+                          ></e-icon>
                         </button>
                     </div>
                 </li>
@@ -495,12 +531,17 @@ const handleFileRename = (event, item, _this, oldName) => {
             ml-[10px]
             rounded-[4px]
             bottom-[10vh]
+            text-ellipsis
         ">
             <p class="
+                block
                 px-[56px]
                 text-[25px]
-                mb-2
+                w-[100%]
                 text-white
+                text-ellipsis
+                whitespace-nowrap
+                overflow-hidden
             ">{{ progressEntity.message }} {{ progressEntity.fileName }}</p>
             <!-- progress bar container -->
             <div class="

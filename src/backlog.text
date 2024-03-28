@@ -10,6 +10,9 @@
 [v] configure git repo settings
 [v] Make some minor changes , commit and push
 
+[] add svgo plugin
+[] add aliaces
+
 [] backlog watch fast - eject to priority
 [] separate API calls, ComponentsUI, helpers
 [] clear tw styles in every single file
