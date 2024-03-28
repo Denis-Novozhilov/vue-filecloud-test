@@ -1,3 +1,10 @@
+#bookmark
+Валидация
+Ошибки
+СтайлГайд -
+Далее разбиение на компоненты
+И подготовка финальной версии
+
 ===-priority-1-↓===
 [v] transfer project to WebStorm
 [v] configure git repo settings
@@ -11,9 +18,12 @@
 
 [] add overfilling css styles to progressBar
 [] refactor all warnings
+[] refactor directory views to components and sub components folders
+[] add login with local storage save token
 ===-priority-1-↑===
 
 ===-priority-2-↓===
+[] TailWind clear all custom sizes - [with square brackets]
 [] configure svg plugins and linters
 [] watch how to use slots
 [] watch how to use named slots

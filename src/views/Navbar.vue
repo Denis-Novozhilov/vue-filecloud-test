@@ -1,10 +1,10 @@
 <script setup lang="ts">
-    import axios from 'axios';
-    import { useAuthStore } from '../store/authStore';
-    import { storeToRefs } from 'pinia'; 
-    import { useRouter } from 'vue-router';
+import axios from 'axios';
+import {useAuthStore} from '../store/authStore';
+import {storeToRefs} from 'pinia';
+import {useRouter} from 'vue-router';
 
-    const authStore = useAuthStore();
+const authStore = useAuthStore();
     const { isLogged } = storeToRefs(authStore);
     const router = useRouter();
 
@@ -17,28 +17,15 @@
         .then(() => {
             authStore.logOut()
             // !!! try again
-            // !* #task [] refactor logout here 
+            // !* #task [] refactor logout here
             // !* #task [] checkUp Again if this issue fixed after store puts in inputs
+
             // router.push({
             //     name: 'Main'
             // });
             router.push({
                 name: 'Login'
             });
-            // router.push({
-            //     name: 'Settings'
-            // });
-            // router.push('/login');
-            // setTimeout(() => { 
-            //     router.push('/');
-            //  }, 1000)
-            // setTimeout(() => { 
-            //     router.push('/about');
-            //  }, 1000)
-            // setTimeout(() => { 
-            //     router.push('/');
-            //  }, 1000)
-
         })
         .catch(error => {
             console.log(JSON.stringify(error.response.data))

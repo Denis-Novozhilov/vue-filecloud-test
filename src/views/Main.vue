@@ -376,26 +376,32 @@ const handleFileRename = (event, item, _this, oldName) => {
                     v-for=" item  in  sortedFiles " :key="item?.id">
                     <div class="checker">
                         <label :for="`${item?.id}`">
-                            <input class="
-                                peer/inputx 
-                                appearance-none
-                                " type="checkbox" :name="`${item?.id}`" :id="`${item?.id}`"
-                                :checked="item?.isChecked" @change="toggleItemSelection(item)">
+                            <input
+                                class="
+                                  peer/inputx
+                                  appearance-none
+                                "
+                                type="checkbox"
+                                :name="`${item?.id}`"
+                                :id="`${item?.id}`"
+                                :checked="item?.isChecked"
+                                @change="toggleItemSelection(item)"
+                            >
                             <div class="
-                            w-[33px]
-                            h-[33px]
-                            bg-center
-                            bg-no-repeat
-                            rounded-[6px]
-                            cursor-pointer
-                            bg-[url('./assets/checkbox-unchecked.svg')]
-                            peer-checked/inputx:bg-[url('./assets/checkbox-checked.svg')]
-                            peer-focus/inputx:outline
-                            peer-focus/inputx:outline-[5px]
-                            peer-focus/inputx:outline-offset-[-5px]
-                            peer-focus/inputx:outline-blue-500
-                            peer-disabled/inputx:opacity-30
-                        "></div>
+                                  w-[33px]
+                                  h-[33px]
+                                  bg-center
+                                  bg-no-repeat
+                                  rounded-[6px]
+                                  cursor-pointer
+                                  bg-[url('./assets/checkbox-unchecked.svg')]
+                                  peer-checked/inputx:bg-[url('./assets/checkbox-checked.svg')]
+                                  peer-focus/inputx:outline
+                                  peer-focus/inputx:outline-[5px]
+                                  peer-focus/inputx:outline-offset-[-5px]
+                                  peer-focus/inputx:outline-blue-500
+                                  peer-disabled/inputx:opacity-30"
+                            ></div>
                         </label>
                     </div>
                     <div class="fl-col1 fileName">
