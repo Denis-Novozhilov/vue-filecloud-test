@@ -7,9 +7,58 @@ import TableHeaderControls from "../components/TableHeaderControls.vue";
 import ButtonUI from "../components/ButtonUI.vue";
 import {fileDownload} from "../api/fileDownload.ts";
 import {fileDelete} from "../api/fileDelete.ts";
-import {formatTimestamp} from "../helpers/formatTimestamp.ts";
-import {formatBytes} from "../helpers/formatBytes.ts";
+// import {formatTimestamp} from "../helpers/formatTimestamp.ts";
+// import {formatBytes} from "../helpers/formatBytes.ts";
 import {ejectExtension, getExtensionIconURL} from "../helpers/getExtension.ts";
+import EIcon from "@src/components/EIcon.vue";
+// import {filersOrders, sortBy, sortedFiles} from "@src/helpers/filterFiles.ts";
+import {fileSend} from "@src/api/fileSend.ts";
+
+//!!!
+//!!!
+//!!!
+// import EIcon from "@src/components/EIcon.vue";
+// import {fileDelete} from "../api/fileDelete.ts";
+// import {formatTimestamp} from "../helpers/formatTimestamp.ts";
+ const formatBytes = (bytes: number) => {
+  if (bytes === 0) return '0 Б';
+  const k = 1024;
+  const sizes = ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ', 'ПБ', 'ЭБ', 'ЗБ', 'ИБ'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+};
+
+type DateValue = number|string;
+ const formatTimestamp = (timestamp: number) => {
+  let date = new Date(timestamp);
+
+  let day:DateValue = date.getDate();
+  let month:DateValue = date.getMonth() + 1;
+  let year:DateValue = date.getFullYear();
+  let hours:DateValue = date.getHours();
+  let minutes:DateValue = date.getMinutes();
+
+  if (day < 10) {
+    day = '0' + day;
+  }
+  if (month < 10) {
+    month = '0' + month;
+  }
+  if (hours < 10) {
+    hours = '0' + hours;
+  }
+  if (minutes < 10) {
+    minutes = '0' + minutes;
+  }
+
+  const formattedDate = day + '.' + month + '.' + year + ', ' + hours + ':' + minutes;
+
+  return formattedDate;
+};
+//!!!
+//!!!
+//!!!
+
 
 let isAnyFileSelected = ref<boolean>(false);
 let isEveryFileSelected = ref<boolean>(false);
@@ -19,7 +68,7 @@ const fileInput = ref<HTMLInputElement | null>(null);
 
 const {progressEntity} = notificationStore;
 
-// FILTERS
+// // FILTERS
 type FiltersVariants = 'name' | 'createdAt' | 'size';
 type OrdersVariants = 'Asc' | 'Desc';
 const filersOrders: { [key: string]: OrdersVariants } = {
@@ -57,7 +106,8 @@ const sortBy = (key: FiltersVariants) => {
         filersOrders[key] = 'Asc'
     }
 };
-/// FILTERS ↑
+// /// FILTERS ↑
+
 
 const checkSelections = computed(() => isEveryFileSelected.value || isAnyFileSelected.value);
 
@@ -130,50 +180,11 @@ const handleSelectAll = (event) => {
     }
 }
 
-const handleFileSend = async (files: FileList | null) => {
-
-    if (!files) {
-        return
-    }
-
-    for (const fileToUpload of files) {
-
-        // #task [] refactor - use progressEntity as progressBar custom hook
-        progressEntity.reset();
-        progressEntity.message = 'Загрузка файла';
-        progressEntity.fileName = fileToUpload.name;
-        progressEntity.uploading = true;
-
-        let formData = new FormData();
-        formData.append('file', fileToUpload);
-
-        // #task [] refactor - axios to external function
-        // #task [] refactor - url to constant
-        // #task [] refactor - headers to constant
-        // #task [] refactor - onUploadProgress to constant
-        await axios.post(`${BASE_URL}/file?filename=${fileToUpload.name}`, formData, {
-            headers: {
-                'auth-token': `Bearer ${authStore.token}`,
-                'Content-Type': 'multipart/form-data'
-            },
-            onUploadProgress: progressEvent => {
-                progressEntity.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
-            }
-        })
-            .then(responce => {
-                filesStore.pushFileEntity(responce.data);
-            })
-            .catch(error => {
-                // #task [] refactor - handle error in progressBar
-                console.error('Error uploading files:', error);
-            })
-            .finally(() => {
-                progressEntity.reset();
-            })
-    }
-    if (isEveryFileSelected.value) {
-        mainChecker.value?.click()
-    }
+const sendFilehandler = (files) => {
+  fileSend(files)
+  if (isEveryFileSelected.value) {
+    mainChecker.value?.click()
+  }
 }
 
 const updateWidth = (event, { id }, _this) => {
@@ -238,6 +249,8 @@ const handleFileRename = (event, item, _this, oldName) => {
         })
 }
 
+const isEmpty = computed(() => Boolean(filesStore.getQuantityEntities) ? false : true)
+
 </script>
 
 <template>
@@ -256,7 +269,7 @@ const handleFileRename = (event, item, _this, oldName) => {
                     class="hidden"
                     type="file"
                     ref="fileInput"
-                    @change="handleFileSend(fileInput?.files)"
+                    @change="sendFilehandler(fileInput?.files)"
                     multiple
                 >
 
@@ -270,37 +283,52 @@ const handleFileRename = (event, item, _this, oldName) => {
             </div>
 
             <!-- fail list table -->
-            <ul class="
+            <ul
+                class="
                 mt-[50px]
                 filesList
-            ">
+                ">
 
                 <!-- filters ↓ -->
                 <li class="relative">
 
                     <!-- mail checker ↓ -->
                     <div class="checker mainChecker">
-                        <label :for="'all'">
-                            <input class="
-                    peer/inputx 
-                    appearance-none
-                    " type="checkbox" :name="'all'" :id="'all'" :checked="isEveryFileSelected"
-                                @change="handleSelectAll($event)" ref="mainChecker">
-                            <div class="
-                            w-[33px]
-                            h-[33px]
-                            bg-center
-                            bg-no-repeat
-                            rounded-[6px]
-                            cursor-pointer
-                            bg-[url('./assets/icons/checkbox-ui-unchecked.svg')]
-                            peer-checked/inputx:bg-[url('./assets/icons/checkbox-ui-checked.svg')]
-                            peer-focus/inputx:outline
-                            peer-focus/inputx:outline-[5px]
-                            peer-focus/inputx:outline-offset-[-5px]
-                            peer-focus/inputx:outline-blue-500
-                            peer-disabled/inputx:opacity-30
-                        "></div>
+                        <label :for="'checkAll'">
+
+                            <input
+                                class="
+                                peer/inputx
+                                appearance-none
+                                "
+                                type="checkbox"
+                                :name="'checkAll'"
+                                :id="'checkAll'"
+                                :checked="isEveryFileSelected"
+                                :disabled="isEmpty"
+
+                                @change="handleSelectAll($event)"
+                                ref="mainChecker"
+                            >
+
+                            <div
+                                :hidden="isEmpty"
+                                class="
+                                w-[33px]
+                                h-[33px]
+                                bg-center
+                                bg-no-repeat
+                                rounded-[6px]
+                                cursor-pointer
+                                bg-[url('./assets/icons/checkbox-ui-unchecked.svg')]
+                                peer-checked/inputx:bg-[url('./assets/icons/checkbox-ui-checked.svg')]
+                                peer-focus/inputx:outline
+                                peer-focus/inputx:outline-[5px]
+                                peer-focus/inputx:outline-offset-[-5px]
+                                peer-focus/inputx:outline-blue-500
+                                peer-disabled/inputx:opacity-30
+                                "
+                            ></div>
                         </label>
                     </div>
                     <!-- mail checker ↑ -->
@@ -312,7 +340,10 @@ const handleFileRename = (event, item, _this, oldName) => {
                           fl-col1
                           text-left
                           filterBtn
-                          cursor-pointer"
+                          cursor-pointer
+                          disabled:opacity-30
+                        "
+                        :disabled="isEmpty"
                         @click="sortBy('name')"
                     >
 
@@ -323,7 +354,6 @@ const handleFileRename = (event, item, _this, oldName) => {
                                 :class="[
                                 'ml-1',
                                 'fill-current',
-                                'hover:fill-red-700',
                                 (filersOrders['name'] === 'Desc') && 'rotate-180']"
                             ></e-icon>
                         </div>
@@ -333,7 +363,10 @@ const handleFileRename = (event, item, _this, oldName) => {
                         class="
                           fl-col2
                           filterBtn
-                          cursor-pointer"
+                          cursor-pointer
+                          disabled:opacity-30
+                        "
+                        :disabled="isEmpty"
                         @click="sortBy('createdAt')"
                     >
 
@@ -344,7 +377,6 @@ const handleFileRename = (event, item, _this, oldName) => {
                               :class="[
                                   'ml-1',
                                   'fill-current',
-                                  'hover:fill-red-700',
                                   (filersOrders['createdAt'] === 'Desc') && 'rotate-180']"
                           ></e-icon>
                       </div>
@@ -355,7 +387,10 @@ const handleFileRename = (event, item, _this, oldName) => {
                         class="
                           fl-col3
                           filterBtn
-                          cursor-pointer"
+                          cursor-pointer
+                          disabled:opacity-30
+                        "
+                        :disabled="isEmpty"
                         @click="sortBy('size')"
                     >
                         <div class="flex justify-center">
@@ -365,25 +400,37 @@ const handleFileRename = (event, item, _this, oldName) => {
                                 :class="[
                                     'ml-1',
                                     'fill-current',
-                                    'hover:fill-red-700',
                                     (filersOrders['size'] === 'Desc') && 'rotate-180']"
                             ></e-icon>
                         </div>
                     </button>
 
                 </li>
-                <hr class="
-                mt-[7px]
-                mb-[25px]
-                border
-                border-b-[2px]
-            ">
+                <hr
+                  class="
+                  mt-[7px]
+                  mb-[25px]
+                  border
+                  border-b-[2px]
+                ">
+
+                <p
+                  v-if="isEmpty"
+                  class="
+                  block
+                  mt-10
+                  ml-4
+                  text-3xl
+                  font-bold
+                  text-gray-300
+                ">Нет файлов</p>
 
                 <table-header-controls
                   :isSelections="checkSelections"
                   :isAny="isAnyFileSelected"
                   :isEvery="isEveryFileSelected"
                 ></table-header-controls>
+
 
                 <!-- files list row ↓ -->
                 <li :class="['filesListRow', 'hover:bg-slate-100', item?.isChecked && 'selected']"

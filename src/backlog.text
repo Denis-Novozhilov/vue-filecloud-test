@@ -26,6 +26,8 @@
 ===-priority-1-↑===
 
 ===-priority-2-↓===
+[] all buttons eject to ButtonUI
+
 [] TailWind clear all custom sizes - [with square brackets]
 [] configure svg plugins and linters
 [] watch how to use slots
