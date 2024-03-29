@@ -1,6 +1,6 @@
-import {FileEntity} from "../types/fileEntity.ts";
 import axios from "axios";
 import {BASE_URL} from "./index.ts";
+import {FileEntity} from "../types/fileEntity.ts";
 import {authStore, notificationStore} from "../store";
 
 const {progressEntity} = notificationStore;
@@ -11,9 +11,7 @@ export const fileDownload = async (files: FileEntity[]) => {
 
         // #task [] refactor - use progressEntity as progressBar custom hook
         progressEntity.reset();
-        progressEntity.message = 'Скачивание файла';
-        progressEntity.fileName = fileToDownload.name;
-        progressEntity.uploading = true;
+        progressEntity.set('Скачивание файла', fileToDownload.name, true);
 
         // #task [] refactor - axios to external function
         // #task [] refactor - url to constant

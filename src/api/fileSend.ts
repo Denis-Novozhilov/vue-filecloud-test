@@ -13,9 +13,7 @@ export const fileSend = async (files: FileList | null) => {
 
         // #task [] refactor - use progressEntity as progressBar custom hook
         progressEntity.reset();
-        progressEntity.message = 'Загрузка файла';
-        progressEntity.fileName = fileToUpload.name;
-        progressEntity.uploading = true;
+        progressEntity.set('Загрузка файла',fileToUpload.name, true);
 
         let formData = new FormData();
         formData.append('file', fileToUpload);

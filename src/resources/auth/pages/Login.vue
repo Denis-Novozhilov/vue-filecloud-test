@@ -1,11 +1,7 @@
 <script setup>
 import axios from 'axios';
-import { useAuthStore } from '../store/authStore';
-import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
-
-const authStore = useAuthStore();
-const { isLogged , token } = storeToRefs(authStore);
+import { authStore } from "@src/store/index.ts";
 
 const router = useRouter();
 
@@ -18,14 +14,13 @@ const login = () => {
     axios.post('http://localhost:3000/login', loginData)
         .then(response => {
             console.log(response.data);
-            // Сохраняем токен и статус в хранилище
+
             authStore.toggleLoggedStatus(true);
             authStore.setToken(response.data);
-            // Перенаправляем пользователя на другую страницу
+
             router.push({
                 name: 'Main'
             });
-            // [] task {} obj - const for routing (not strings)
         })
         .catch(error => {
             console.log(JSON.stringify(error.response.data))

@@ -1,7 +1,7 @@
 import {FileEntity} from "../types/fileEntity.ts";
-import axios from "axios";
 import {BASE_URL} from "./index.ts";
 import {authStore, filesStore, notificationStore} from "../store";
+import axios from "axios";
 
 const {progressEntity} = notificationStore;
 export const fileDelete = async (files: FileEntity[]) => {
@@ -10,9 +10,7 @@ export const fileDelete = async (files: FileEntity[]) => {
 
         // #task [] refactor - use progressEntity as progressBar custom hook
         progressEntity.reset();
-        progressEntity.message = 'Удаление файла';
-        progressEntity.fileName = fileToDelete.name;
-        progressEntity.uploading = true;
+        progressEntity.set('Удаление файла', fileToDelete.name, true);
 
         // #task [] refactor - axios to external function
         // #task [] refactor - url to constant

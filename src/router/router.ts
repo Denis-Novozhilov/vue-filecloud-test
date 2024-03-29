@@ -1,16 +1,16 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import { authStore } from '../store/index';
+import {createRouter, createWebHistory} from 'vue-router';
+import {authStore} from '../store/index';
 
 const routes = [
 	{
 		name: 'Main',
 		path: '/',
-		component: () => import('../views/Main.vue')
+		component: () => import('../resources/fileList/pages/FileList.vue')
 	},
 	{
 		name: 'Login',
 		path: '/login',
-		component: () => import('../views/Login.vue')
+		component: () => import('../resources/auth/pages/Login.vue')
 	},
 	{
 		name: 'About',

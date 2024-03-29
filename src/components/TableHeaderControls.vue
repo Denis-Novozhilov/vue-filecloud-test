@@ -4,7 +4,7 @@ import {computed, ComputedRef, withDefaults} from "vue";
 import {filesStore} from "../store";
 import {fileDelete} from "../api/fileDelete.ts";
 import {fileDownload} from "../api/fileDownload.ts";
-import ButtonUI from "./ButtonUI.vue";
+import ButtonUI from "../resources/common/ui/ButtonUI.vue";
 
 const props = withDefaults(defineProps<{
   isSelections:  ComputedRef<boolean>  | boolean,

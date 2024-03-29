@@ -16,12 +16,15 @@ export const useAuthStore = defineStore('authStore', {
 			this.isLogged = value;
 		},
 		setToken(value: string) {
+			localStorage.setItem('token', value);
 			this.token = value;
 		},
 		clearToken() {
 			this.token = null;
 		},
 		logOut() {
+
+			localStorage.removeItem('token');
 			this.token = null;
 			this.isLogged = false;
 		}

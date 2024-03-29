@@ -26,6 +26,9 @@
 ===-priority-1-↑===
 
 ===-priority-2-↓===
+[] fix bug with css styles button EXIT while progressbar is showing
+[] check is all tw styles on a project writtend inline or column and fix
+[] check all style classes end closed parenthesis
 [] all buttons eject to ButtonUI
 
 [] TailWind clear all custom sizes - [with square brackets]

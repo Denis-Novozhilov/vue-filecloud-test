@@ -1,23 +1,20 @@
 <script lang="ts" setup>
-import axios from 'axios';
 import {computed, onMounted, ref} from 'vue';
-import {authStore, filesStore, notificationStore} from '../store/index';
-import {BASE_URL} from '../api/index.ts'
-import TableHeaderControls from "../components/TableHeaderControls.vue";
-import ButtonUI from "../components/ButtonUI.vue";
-import {fileDownload} from "../api/fileDownload.ts";
-import {fileDelete} from "../api/fileDelete.ts";
+import {filesStore, notificationStore} from '../../../store';
+import TableHeaderControls from "../../../components/TableHeaderControls.vue";
+import ButtonUI from "../../common/ui/ButtonUI.vue";
 // import {formatTimestamp} from "../helpers/formatTimestamp.ts";
 // import {formatBytes} from "../helpers/formatBytes.ts";
-import {ejectExtension, getExtensionIconURL} from "../helpers/getExtension.ts";
-import EIcon from "@src/components/EIcon.vue";
+import {ejectExtension, getExtensionIconURL} from "../../../helpers/getExtension.ts";
 // import {filersOrders, sortBy, sortedFiles} from "@src/helpers/filterFiles.ts";
-import {fileSend} from "@src/api/fileSend.ts";
+import {fileDelete, fileDownload, fileListInit, fileRename, fileSend} from '../../../api/index.ts'
+import {ejectName} from "@src/helpers/ejectName.ts";
+import IconUI from "@src/components/IconUI.vue";
+import {FileEntity} from "@src/types/fileEntity.ts";
 
 //!!!
 //!!!
 //!!!
-// import EIcon from "@src/components/EIcon.vue";
 // import {fileDelete} from "../api/fileDelete.ts";
 // import {formatTimestamp} from "../helpers/formatTimestamp.ts";
  const formatBytes = (bytes: number) => {
@@ -111,26 +108,8 @@ const sortBy = (key: FiltersVariants) => {
 
 const checkSelections = computed(() => isEveryFileSelected.value || isAnyFileSelected.value);
 
-onMounted(() => {
-    // #task [] add to constants
-    // #task [] add header to constants
 
-    axios.get(`${BASE_URL}/list`, {
-        headers: {
-            'auth-token': `Bearer ${authStore.token}`
-        }
-    })
-        .then(response => {
-            console.log(response.data)
-            filesStore.setFileEntities(response.data);
-        })
-        .catch(error => {
-            console.log(JSON.stringify(error))
-            console.log(JSON.stringify(error.response.data))
-        });
-})
 
-const ejectName = (fileName = 'default.file') => fileName.split(".").slice(0, -1).join('.');
 
 const toggleItemSelection = (item) => {
 
@@ -180,11 +159,23 @@ const handleSelectAll = (event) => {
     }
 }
 
-const sendFilehandler = (files) => {
-  fileSend(files)
-  if (isEveryFileSelected.value) {
+const skipMainSelections = () => {
+  if (mainChecker.value?.checked) {
     mainChecker.value?.click()
   }
+  if (isEveryFileSelected.value) {
+    isEveryFileSelected.value = false;
+  }
+}
+
+const sendFileHandler = (files: FileList) => {
+  fileSend(files)
+  skipMainSelections()
+}
+
+const deleteFileHandler = (files: FileEntity[]) => {
+  fileDelete(files)
+  skipMainSelections()
 }
 
 const updateWidth = (event, { id }, _this) => {
@@ -197,60 +188,12 @@ const updateWidth = (event, { id }, _this) => {
 }
 
 // #task [] refactor ↓ with ref instead _this.$refs etc...
-const handleFileRename = (event, item, _this, oldName) => {
-
-    let value = event.target.value.trim()
-
-    if (value === oldName) {
-        return
-    }
-
-    if (value === "") {
-        value = '_'
-    }
-
-    const _inputRef = _this.$refs[`fileName${item.id}`][0];
-
-
-    // update input width
-    // #task [] eject 17.5 and 8 to constants
-    _inputRef.style.width = `${value.length * 17.8 + 8}px`;
-
-
-    progressEntity.message = 'Переименование файла';
-    progressEntity.uploading = true;
-
-
-    // #task [] refactor url to constants
-    // #task [] refactor headers to constants
-    // #task [] refactor eject onUploadProgress to helpers
-    axios.put(`${BASE_URL}/file?filename=${item.name}`, {
-        name: `${value}.${ejectExtension(item?.name).toLowerCase()}`
-    }, {
-        headers: {
-            'auth-token': `Bearer ${authStore.token}`,
-            "content-type": "application/json; charset=utf-8"
-        },
-        onUploadProgress: progressEvent => {
-            progressEntity.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent?.total);
-        }
-    })
-        .then(response => {
-
-            // #task [] turn back backend behavior and filter fileStore wit new single file
-            filesStore.updateEntity(response.data);
-        })
-        .catch(error => {
-            console.error('Error uploading file:', error);
-            // [] #task Обработка ошибки
-        })
-        .finally(() => {
-            progressEntity.reset();
-        })
-}
 
 const isEmpty = computed(() => Boolean(filesStore.getQuantityEntities) ? false : true)
 
+onMounted(() => {
+  fileListInit()
+})
 </script>
 
 <template>
@@ -269,7 +212,7 @@ const isEmpty = computed(() => Boolean(filesStore.getQuantityEntities) ? false :
                     class="hidden"
                     type="file"
                     ref="fileInput"
-                    @change="sendFilehandler(fileInput?.files)"
+                    @change="sendFileHandler(fileInput?.files)"
                     multiple
                 >
 
@@ -282,7 +225,7 @@ const isEmpty = computed(() => Boolean(filesStore.getQuantityEntities) ? false :
 
             </div>
 
-            <!-- fail list table -->
+            <!-- fail list table v1 ↓ -->
             <ul
                 class="
                 mt-[50px]
@@ -349,13 +292,13 @@ const isEmpty = computed(() => Boolean(filesStore.getQuantityEntities) ? false :
 
                         <div class="flex">
                             <p>Название</p>
-                            <e-icon
+                            <icon-u-i
                                 icon="arrow-ui"
                                 :class="[
                                 'ml-1',
                                 'fill-current',
                                 (filersOrders['name'] === 'Desc') && 'rotate-180']"
-                            ></e-icon>
+                            ></icon-u-i>
                         </div>
                     </button>
 
@@ -372,13 +315,13 @@ const isEmpty = computed(() => Boolean(filesStore.getQuantityEntities) ? false :
 
                       <div class="flex justify-center">
                           <p>Дата изменения</p>
-                          <e-icon
+                          <icon-u-i
                               icon="arrow-ui"
                               :class="[
                                   'ml-1',
                                   'fill-current',
                                   (filersOrders['createdAt'] === 'Desc') && 'rotate-180']"
-                          ></e-icon>
+                          ></icon-u-i>
                       </div>
 
                     </button>
@@ -395,13 +338,13 @@ const isEmpty = computed(() => Boolean(filesStore.getQuantityEntities) ? false :
                     >
                         <div class="flex justify-center">
                             <p>Размер</p>
-                            <e-icon
+                            <icon-u-i
                                 icon="arrow-ui"
                                 :class="[
                                     'ml-1',
                                     'fill-current',
                                     (filersOrders['size'] === 'Desc') && 'rotate-180']"
-                            ></e-icon>
+                            ></icon-u-i>
                         </div>
                     </button>
 
@@ -484,7 +427,7 @@ const isEmpty = computed(() => Boolean(filesStore.getQuantityEntities) ? false :
                               text-ellipsis
                               cursor-text"
                             @input="updateWidth($event, item, this)"
-                            @change="handleFileRename($event, item, this, ejectName(item?.name))" />
+                            @change="fileRename($event, item)" />
                         <p class="
                             info
                             mt-[5px]
@@ -517,10 +460,10 @@ const isEmpty = computed(() => Boolean(filesStore.getQuantityEntities) ? false :
                         >
                             <!-- #task [] refactor ↑ -->
 
-                          <e-icon
+                          <icon-u-i
                               class="self-center"
                               icon="edit-ui"
-                          ></e-icon>
+                          ></icon-u-i>
                         </button>
 
                         <button
@@ -535,10 +478,10 @@ const isEmpty = computed(() => Boolean(filesStore.getQuantityEntities) ? false :
                             focus:border-none"
                             @click="fileDownload([item])"
                         >
-                          <e-icon
+                          <icon-u-i
                               class="self-center"
                               icon="download-ui"
-                          ></e-icon>
+                          ></icon-u-i>
                         </button>
 
                         <button
@@ -551,16 +494,20 @@ const isEmpty = computed(() => Boolean(filesStore.getQuantityEntities) ? false :
                             focus:outline-stone-300
                             focus:outline-offset-[3px]
                             focus:border-none"
-                            @click="fileDelete([item])"
+                            @click="deleteFileHandler([item])"
                         >
-                          <e-icon
+                          <icon-u-i
                               class="self-center"
                               icon="delete-ui"
-                          ></e-icon>
+                          ></icon-u-i>
                         </button>
                     </div>
                 </li>
             </ul>
+            <!-- fail list table v1 ↑ -->
+
+            <!-- fail list table v2 ↓ -->
+            <!-- fail list table v2 ↑ -->
         </div>
 
         <!-- progress bar -->
