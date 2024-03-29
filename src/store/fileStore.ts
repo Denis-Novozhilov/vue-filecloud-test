@@ -24,7 +24,6 @@ export const useFilesStore = defineStore('filesStore', {
 		getSelectedFiles: (state) => Array.from(state.selectedFiles.values())
 	},
 	actions: {
-		// actions for files entities
 		setFileEntities(value: FileEntity[]) {
 			this.filesEntities = value;
 		},
@@ -36,17 +35,7 @@ export const useFilesStore = defineStore('filesStore', {
 			this.filesEntities = this.filesEntities.concat(value);
 		},
 		updateEntity(value: FileEntity) {
-			// // delete
-			// this.filesEntities = this.filesEntities.filter((el) => el.id !== value.id);
-			// // add new
-			// this.filesEntities.push(value);
-			// this.filesEntities = this.filesEntities.map((el) => {
-			// 	if (el.id === value.id) {
-			// 		el = value;
-			// 	}
-			// });
 			this.filesEntities = this.filesEntities.map((el) => (el.id === value.id ? value : el));
-			// const etityToUpdate = this.filesEntities.find((el) => el.id === value.id);
 		},
 		deleteFileEntity(value: FileEntity) {
 			this.filesEntities = this.filesEntities.filter((el) => el.id !== value.id);

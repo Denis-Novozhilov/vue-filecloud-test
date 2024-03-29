@@ -1,60 +1,18 @@
 <script lang="ts" setup>
 import {computed, onMounted, ref} from 'vue';
-import {filesStore, notificationStore} from '../../../store';
-import TableHeaderControls from "../../../components/TableHeaderControls.vue";
-import ButtonUI from "../../common/ui/ButtonUI.vue";
-// import {formatTimestamp} from "../helpers/formatTimestamp.ts";
-// import {formatBytes} from "../helpers/formatBytes.ts";
-import {ejectExtension, getExtensionIconURL} from "../../../helpers/getExtension.ts";
-// import {filersOrders, sortBy, sortedFiles} from "@src/helpers/filterFiles.ts";
-import {fileDelete, fileDownload, fileListInit, fileRename, fileSend} from '../../../api/index.ts'
+import {filesStore, notificationStore} from '@src/store';
+import TableHeaderControls from "@src/resources/fileList/pages/components/FileListHeaderControls.vue";
+import ButtonUI from "@src/resources/common/ui/ButtonUI.vue";
+import IconUI from "@src/resources/common/ui/IconUI.vue";
+import {defineWidth, updateWidth} from "@src/helpers/defineWidth.ts";
+import {getExtensionIconURL} from "@src/helpers/getExtension.ts";
+import {focusNameField} from "@src/helpers/focusNameField.ts";
 import {ejectName} from "@src/helpers/ejectName.ts";
-import IconUI from "@src/components/IconUI.vue";
 import {FileEntity} from "@src/types/fileEntity.ts";
-
-//!!!
-//!!!
-//!!!
-// import {fileDelete} from "../api/fileDelete.ts";
-// import {formatTimestamp} from "../helpers/formatTimestamp.ts";
- const formatBytes = (bytes: number) => {
-  if (bytes === 0) return '0 Б';
-  const k = 1024;
-  const sizes = ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ', 'ПБ', 'ЭБ', 'ЗБ', 'ИБ'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-};
-
-type DateValue = number|string;
- const formatTimestamp = (timestamp: number) => {
-  let date = new Date(timestamp);
-
-  let day:DateValue = date.getDate();
-  let month:DateValue = date.getMonth() + 1;
-  let year:DateValue = date.getFullYear();
-  let hours:DateValue = date.getHours();
-  let minutes:DateValue = date.getMinutes();
-
-  if (day < 10) {
-    day = '0' + day;
-  }
-  if (month < 10) {
-    month = '0' + month;
-  }
-  if (hours < 10) {
-    hours = '0' + hours;
-  }
-  if (minutes < 10) {
-    minutes = '0' + minutes;
-  }
-
-  const formattedDate = day + '.' + month + '.' + year + ', ' + hours + ':' + minutes;
-
-  return formattedDate;
-};
-//!!!
-//!!!
-//!!!
+import {fileDelete, fileDownload, fileListInit, fileRename, fileSend} from '@src/api/index.ts'
+import {formatExtension} from "@src/helpers/formatExtension.ts";
+import {formatTimestamp} from "@src/helpers/formatTimestamp.ts";
+import {formatBytes} from "@src/helpers/formatBytes.ts";
 
 
 let isAnyFileSelected = ref<boolean>(false);
@@ -65,7 +23,7 @@ const fileInput = ref<HTMLInputElement | null>(null);
 
 const {progressEntity} = notificationStore;
 
-// // FILTERS
+// FILTERS ↓
 type FiltersVariants = 'name' | 'createdAt' | 'size';
 type OrdersVariants = 'Asc' | 'Desc';
 const filersOrders: { [key: string]: OrdersVariants } = {
@@ -88,7 +46,6 @@ const sortedFiles = computed(() => {
 });
 
 const sortBy = (key: FiltersVariants) => {
-    // if the same key → inverse current filter ↓
     if (sortKey.value === key) {
         sortOrder.value *= -1;
         if (sortOrder.value < 0) {
@@ -96,69 +53,61 @@ const sortBy = (key: FiltersVariants) => {
         } else {
             filersOrders[key] = 'Asc'
         }
-    // if another key → apply new filter ↓
     } else {
         sortKey.value = key;
         sortOrder.value = 1;
         filersOrders[key] = 'Asc'
     }
 };
-// /// FILTERS ↑
-
-
-const checkSelections = computed(() => isEveryFileSelected.value || isAnyFileSelected.value);
-
-
+// FILTERS ↑
 
 
 const toggleItemSelection = (item) => {
 
-    if (item.isChecked) {
-        filesStore.removeSelected(item)
-        item.isChecked = false;
+  if (item.isChecked) {
+    filesStore.removeSelected(item)
+    item.isChecked = false;
 
-    } else {
-        item.isChecked = true;
-        filesStore.addSelected(item)
-    }
+  } else {
+    item.isChecked = true;
+    filesStore.addSelected(item)
+  }
 
-    if (filesStore.getQuantitySelected === 0) {
-        isAnyFileSelected.value = false;
-    } else {
-        isAnyFileSelected.value = true;
-    }
+  if (filesStore.getQuantitySelected === 0) {
+    isAnyFileSelected.value = false;
+  } else {
+    isAnyFileSelected.value = true;
+  }
 
-    if (filesStore.getQuantitySelected
-        && filesStore.getQuantitySelected === filesStore.getQuantityEntities) {
-        isEveryFileSelected.value = true;
-    } else {
-        isEveryFileSelected.value = false;
-    }
+  if (filesStore.getQuantitySelected
+      && filesStore.getQuantitySelected === filesStore.getQuantityEntities) {
+    isEveryFileSelected.value = true;
+  } else {
+    isEveryFileSelected.value = false;
+  }
 }
+const handleSelectAll = (event: Event) => {
 
-const handleSelectAll = (event) => {
+  if (event?.target?.checked) {
 
-    if (event.target.checked) {
+    filesStore.filesEntities.forEach(item => {
+      item.isChecked = true;
+      filesStore.addSelected(item);
+    })
 
-        filesStore.filesEntities.forEach(item => {
-            item.isChecked = true;
-            filesStore.addSelected(item);
-        })
+    isEveryFileSelected.value = true;
 
-        isEveryFileSelected.value = true;
+  } else {
+    filesStore.filesEntities.forEach(item => {
+      item.isChecked = false
+    })
 
-    } else {
-        filesStore.filesEntities.forEach(item => {
-            item.isChecked = false
-        })
+    filesStore.clearAllSelected();
 
-        filesStore.clearAllSelected();
-
-        isEveryFileSelected.value = false;
-        isAnyFileSelected.value = false;
-    }
+    isEveryFileSelected.value = false;
+    isAnyFileSelected.value = false;
+  }
 }
-
 const skipMainSelections = () => {
   if (mainChecker.value?.checked) {
     mainChecker.value?.click()
@@ -167,29 +116,18 @@ const skipMainSelections = () => {
     isEveryFileSelected.value = false;
   }
 }
-
-const sendFileHandler = (files: FileList) => {
-  fileSend(files)
-  skipMainSelections()
+const sendFileHandler = async (files: FileList) => {
+  await fileSend(files);
+  skipMainSelections();
+}
+const deleteFileHandler = async (files: FileEntity[]) => {
+  await fileDelete(files);
+  skipMainSelections();
 }
 
-const deleteFileHandler = (files: FileEntity[]) => {
-  fileDelete(files)
-  skipMainSelections()
-}
-
-const updateWidth = (event, { id }, _this) => {
-
-    const value = event.target.value;
-    const inputRef = _this.$refs[`fileName${id}`];
-
-    // #task [] eject 17.5 and 8 to constants
-    inputRef[0].style.width = `${value.length * 17.5 + 8}px`;
-}
-
-// #task [] refactor ↓ with ref instead _this.$refs etc...
-
+const checkSelections = computed(() => isEveryFileSelected.value || isAnyFileSelected.value);
 const isEmpty = computed(() => Boolean(filesStore.getQuantityEntities) ? false : true)
+
 
 onMounted(() => {
   fileListInit()
@@ -212,7 +150,7 @@ onMounted(() => {
                     class="hidden"
                     type="file"
                     ref="fileInput"
-                    @change="sendFileHandler(fileInput?.files)"
+                    @change="sendFileHandler(fileInput.files)"
                     multiple
                 >
 
@@ -225,7 +163,7 @@ onMounted(() => {
 
             </div>
 
-            <!-- fail list table v1 ↓ -->
+            <!-- FilesList table v1 ↓ -->
             <ul
                 class="
                 mt-[50px]
@@ -277,7 +215,7 @@ onMounted(() => {
                     <!-- mail checker ↑ -->
 
 
-<!--    #task [] eject to separate Components              -->
+                    <!--   #task [] eject to separate Components FilterButton   -->
                     <button
                         class="
                           fl-col1
@@ -289,7 +227,6 @@ onMounted(() => {
                         :disabled="isEmpty"
                         @click="sortBy('name')"
                     >
-
                         <div class="flex">
                             <p>Название</p>
                             <icon-u-i
@@ -302,6 +239,7 @@ onMounted(() => {
                         </div>
                     </button>
 
+                    <!--   #task [] eject to separate Components FilterButton   -->
                     <button
                         class="
                           fl-col2
@@ -326,6 +264,7 @@ onMounted(() => {
 
                     </button>
 
+                    <!--   #task [] eject to separate Components FilterButton   -->
                     <button
                         class="
                           fl-col3
@@ -349,6 +288,7 @@ onMounted(() => {
                     </button>
 
                 </li>
+                <!-- filters ↑ -->
                 <hr
                   class="
                   mt-[7px]
@@ -417,11 +357,12 @@ onMounted(() => {
                             :ref="`fileName${item.id}`"
                             :placeholder="ejectName(item?.name)"
                             :value="ejectName(item?.name)"
-                            :style="`width: ${ejectName(item?.name).length * 17.5 + 8}px`"
+                            :style="defineWidth(item?.name)"
                             class="
-                              text-[30px]
+                              text-3xl
                               font-mono
-                              ml-[23px]
+                              ml-6
+                              mt-1.5
                               rounded-md
                               px-[5px]
                               text-ellipsis
@@ -430,8 +371,8 @@ onMounted(() => {
                             @change="fileRename($event, item)" />
                         <p class="
                             info
-                            mt-[5px]
-                        ">{{ `.${ejectExtension(item?.name).toLowerCase()} ` }}</p>
+                            mt-1.5
+                        ">{{ formatExtension(item?.name) }}</p>
 
                     </div>
                     <div class="fl-col2">
@@ -456,7 +397,7 @@ onMounted(() => {
                             focus:outline-stone-300
                             focus:outline-offset-[3px]
                             focus:border-none"
-                            @click="this.$refs[`fileName${item.id}`][0].focus()"
+                            @click="focusNameField(this,item)"
                         >
                             <!-- #task [] refactor ↑ -->
 
@@ -518,20 +459,20 @@ onMounted(() => {
             justify-between
             items-start
             bg-black
-            pt-[10px]
-            px-[0px]
-            w-[47vw]
-            h-[60px]
-            ml-[10px]
-            rounded-[4px]
-            bottom-[10vh]
+            pt-2.5
+            px-0
+            w-10/12
+            h-16
+            ml-2.5
+            rounded-b
+            bottom-20
             text-ellipsis
         ">
             <p class="
                 block
-                px-[56px]
-                text-[25px]
-                w-[100%]
+                px-14
+                text-2xl
+                w-full
                 text-white
                 text-ellipsis
                 whitespace-nowrap
@@ -539,13 +480,15 @@ onMounted(() => {
             ">{{ progressEntity.message }} {{ progressEntity.fileName }}</p>
             <!-- progress bar container -->
             <div class="
-                w-[100%]
-                h-[5.5px]
+                w-full
+                h-1.5
                 bg-cyan-300
             ">
                 <!-- progress bar value -->
-                <div :style="`width: ${progressEntity.uploadProgress}%`" class="
-                    h-[5.5px]
+                <div
+                   :style="`width: ${progressEntity.uploadProgress}%`"
+                   class="
+                    h-1.5
                     bg-blue-600
                 ">
                 </div>
@@ -565,10 +508,7 @@ onMounted(() => {
 }
 
 .filesListRow {
-    @apply
-    /* outline */
-
-    flex items-center h-[78px] relative [&>div]:h-[100%] [&>div]:flex [&>div]:justify-center [&>div]:items-center [&>div.fileName]:justify-start [&>div.fileName]:pl-[24px] [&>div.controls]:justify-center [&_label]:w-[40px] [&_label]:h-[40px] [&_p.info]:text-[24px] [&_p.info]:font-[600]
+    @apply flex items-center h-[78px] relative [&>div]:h-[100%] [&>div]:flex [&>div]:justify-center [&>div]:items-center [&>div.fileName]:justify-start [&>div.fileName]:pl-[24px] [&>div.controls]:justify-center [&_label]:w-[40px] [&_label]:h-[40px] [&_p.info]:text-[24px] [&_p.info]:font-[600]
 }
 
 .checker {
@@ -581,26 +521,18 @@ onMounted(() => {
 
 .fl-col1 {
     @apply w-[500px]
-    /* w-[42%] */
-    /* bg-yellow-200 */
 }
 
 .fl-col2 {
     @apply w-[270px]
-    /* w-[23%] */
-    /* bg-blue-200 */
 }
 
 .fl-col3 {
     @apply w-[180px] mr-[20px]
-    /* w-[18%] */
-    /* bg-teal-200 */
 }
 
 .fl-col4 {
     @apply w-[220px]
-    /* w-[17%] */
-    /* bg-pink-200 */
 }
 
 .selected {

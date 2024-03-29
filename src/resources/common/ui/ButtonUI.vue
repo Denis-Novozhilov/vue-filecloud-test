@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 defineProps<{ 
-  msg: string,
+  msg?: string,
   bgType?: 'common' | 'inverted',
   textType?: 'bold' | 'normal',
 }>()
@@ -9,21 +9,26 @@ defineProps<{
 </script>
 
 <template>
-    <!-- <button type="button" @click="count++">count is {{ count }}</button> -->
-    <!-- :class="['filesListRow','hover:bg-slate-100', item?.isChecked && 'selected']" -->
-    <button 
-      :class="['btn',bgType,textType]"
-      type="button"
-    >{{ msg }}</button>
+    <button
+        type="button"
+        :class="[
+            'btn',
+            bgType,
+            textType
+        ]"
+    >
+      {{ msg }}
+      <slot></slot>
+    </button>
 </template>
 
 <style scoped>
 .btn{@apply
-  min-h-[42px]
+  min-h-11
   rounded-md
   mr-5
   px-5
-  text-[19px]
+  text-xl
 }
 .bold {@apply
   font-bold

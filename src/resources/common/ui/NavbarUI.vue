@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import {authStore} from '../store/index.ts';
+import {authStore} from '../../../store';
 import {storeToRefs} from 'pinia';
-import IconUI from "@src/components/IconUI.vue";
-import {userLogOut} from "@src/api/index.ts";
+import IconUI from "@src/resources/common/ui/IconUI.vue";
+import {userLogOut} from "@src/api";
+import router from "@src/router/router.ts";
 
 const { isLogged } = storeToRefs(authStore);
 </script>
@@ -10,11 +11,11 @@ const { isLogged } = storeToRefs(authStore);
 <template>
     <div
         :class="[
-        'flex',
-        'h-[70px]',
-        isLogged ? 'loggedIn' : 'loggedOut'
+          'flex',
+          'h-[70px]',
+          isLogged ? 'loggedIn' : 'loggedOut'
         ]"
-        @click="$router.push('/')"
+
     >
         <button
             class="
@@ -22,6 +23,7 @@ const { isLogged } = storeToRefs(authStore);
             pt-2
             mb-1
             "
+            @click="router.push({name:'Main'})"
         >
           <icon-u-i
               class="

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import Navbar from './views/Navbar.vue';
+import NavbarUI from "@src/resources/common/ui/NavbarUI.vue";
 </script>
 
 <template>
   <div class=" container mx-auto px-[176px]" >
-    <Navbar/>
+    <navbar-u-i/>
     <hr class="
         my-[7px]
         w-[100vw]

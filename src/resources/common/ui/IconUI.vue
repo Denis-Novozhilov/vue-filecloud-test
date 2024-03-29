@@ -7,7 +7,21 @@ const props = defineProps<{
 
 const svg = ref('');
 watch(() => props.icon, (icon: string) => {
-  import(`@icons/${icon}.svg?raw`).then((module) => {
+  /*
+
+         alias as `@icons/${icon}.svg?raw`
+         works only when <icon-u-i> component placed in
+         directory `.src/components/IconUI.vue`
+
+  */
+
+  // import(`@icons/${icon}.svg?raw`).then((module) => {
+  // import(`@nested/${icon}.svg?raw`).then((module) => {
+  // import(`@iconsP/${icon}.svg?raw`).then((module) => {
+  // import(`@srcP/assets/icons/${icon}.svg?raw`).then((module) => {
+  // import(`@nestedP/${icon}.svg?raw`).then((module) => {
+  
+  import(`../../../../src/assets/icons/${icon}.svg?raw`).then((module) => {
     if (icon === props.icon) {
       svg.value = module.default;
     }

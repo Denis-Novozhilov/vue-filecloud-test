@@ -6,12 +6,14 @@
 И подготовка финальной версии
 
 ===-priority-1-↓===
+[ ] bag fix - in FileListHeaderControls skipSelections after downloadAll or deleteAll
 [v] transfer project to WebStorm
 [v] configure git repo settings
 [v] Make some minor changes , commit and push
 
-[] add svgo plugin
-[] add aliaces
+[v] add svgo plugin
+[v] add aliaces
+[]  fix aliaces
 
 [] backlog watch fast - eject to priority
 [] separate API calls, ComponentsUI, helpers

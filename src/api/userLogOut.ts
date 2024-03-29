@@ -11,9 +11,7 @@ export const userLogOut = () => {
     })
         .then(() => {
             authStore.logOut()
-            router.push({
-                name: 'Login'
-            });
+            router.push({name: 'Login'});
         })
         .catch(error => {
             console.log(JSON.stringify(error.response.data))

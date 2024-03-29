@@ -11,16 +11,6 @@ const routes = [
 		name: 'Login',
 		path: '/login',
 		component: () => import('../resources/auth/pages/Login.vue')
-	},
-	{
-		name: 'About',
-		path: '/about',
-		component: () => import('../views/About.vue')
-	},
-	{
-		name: 'Settings',
-		path: '/settings',
-		component: () => import('../views/Settings.vue')
 	}
 ];
 
@@ -31,7 +21,7 @@ const router = createRouter({
 	routes
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _, next) => {
 	if (!authStore.isLogged && to.name !== 'Login') {
 		next({ name: 'Login' });
 	} else if (authStore.isLogged && to.name === 'Login') {

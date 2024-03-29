@@ -18,9 +18,7 @@ const login = () => {
             authStore.toggleLoggedStatus(true);
             authStore.setToken(response.data);
 
-            router.push({
-                name: 'Main'
-            });
+            router.push({name: 'Main'});
         })
         .catch(error => {
             console.log(JSON.stringify(error.response.data))

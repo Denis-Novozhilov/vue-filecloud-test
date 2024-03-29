@@ -1,9 +1,9 @@
 import {fileURLToPath, URL} from 'node:url';
 import {defineConfig} from 'vite';
+import path from 'path';
 import vue from '@vitejs/plugin-vue';
 import vueJsxPlugin from '@vitejs/plugin-vue-jsx';
 import svgLoaderPlugin from "./src/plugins/svgLoader";
-// import svgLoaderPlugin from "@/plugins/svgLoader";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -37,8 +37,15 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
+
       '@src': fileURLToPath(new URL('./src', import.meta.url)),
       '@icons': fileURLToPath(new URL('./src/assets/icons', import.meta.url)),
+
+      '@nested': fileURLToPath(new URL('../../../../src/assets/icons', import.meta.url)),
+      '@srcP': path.resolve(__dirname, 'src'),
+      '@iconsP': path.resolve(__dirname, 'src/assets/icons'),
+      '@nestedP': path.resolve(__dirname, '../../../../src/assets/icons'),
+
     }
   }
 })
